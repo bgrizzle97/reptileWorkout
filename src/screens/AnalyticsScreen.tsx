@@ -67,7 +67,7 @@ const AnalyticsScreen = ({ navigation }: AnalyticsScreenProps) => {
       averageDuration: Math.floor(Math.random() * 30) + 45,
       totalTime: (profile.totalWorkouts || 0) * 60,
       currentStreak: profile.currentStreak || 0,
-      longestStreak: Math.max(profile.currentStreak || 0, profile.longestStreak || 0),
+      longestStreak: profile.longestStreak || 0,
       favoriteExercise: 'Bench Press',
       totalWeight: (profile.totalWorkouts || 0) * 100,
       averageWeight: 135,

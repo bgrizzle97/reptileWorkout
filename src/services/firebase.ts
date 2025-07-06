@@ -47,12 +47,18 @@ export interface UserProfile {
   createdAt: Date;
   totalWorkouts: number;
   currentStreak: number;
+  longestStreak: number;
   daysSinceLastSkippedLegDay: number;
   totalWeightLifted: number;
+  supplementLogs: number;
   personalRecords: {
     benchPress: number;
     squat: number;
     deadlift: number;
+    total: number;
+  };
+  specialStats: {
+    [key: string]: number;
   };
   achievements: Achievement[];
 }
@@ -158,13 +164,17 @@ export const createUserProfile = async (userId: string, userData: Partial<UserPr
       createdAt: new Date(),
       totalWorkouts: 0,
       currentStreak: 0,
+      longestStreak: 0,
       daysSinceLastSkippedLegDay: 0,
       totalWeightLifted: 0,
+      supplementLogs: 0,
       personalRecords: {
         benchPress: 0,
         squat: 0,
         deadlift: 0,
+        total: 0,
       },
+      specialStats: {},
       achievements: getDefaultAchievements(),
     };
 
@@ -194,6 +204,13 @@ export const getUserProfile = async (userId: string): Promise<UserProfile | null
       return {
         ...data,
         createdAt: data.createdAt?.toDate() || new Date(),
+        longestStreak: data.longestStreak || 0,
+        supplementLogs: data.supplementLogs || 0,
+        personalRecords: {
+          ...data.personalRecords,
+          total: data.personalRecords?.total || 0,
+        },
+        specialStats: data.specialStats || {},
       } as UserProfile;
     }
     return null;
