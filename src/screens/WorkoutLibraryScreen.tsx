@@ -1,104 +1,8 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, FlatList } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, FlatList, ActivityIndicator } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { theme } from '../constants/theme';
-
-// Exercise data structure
-interface Exercise {
-  id: string;
-  name: string;
-  category: string;
-  muscleGroups: string[];
-  equipment: string[];
-  difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
-  description: string;
-  instructions: string[];
-  broScience: string;
-}
-
-// Sample exercise data
-const exercises: Exercise[] = [
-  {
-    id: '1',
-    name: 'Bench Press',
-    category: 'Chest',
-    muscleGroups: ['Chest', 'Triceps', 'Shoulders'],
-    equipment: ['Barbell', 'Bench'],
-    difficulty: 'Intermediate',
-    description: 'The king of chest exercises. If you can\'t bench, you can\'t call yourself swole.',
-    instructions: [
-      'Lie on the bench with your feet flat on the ground',
-      'Grip the barbell slightly wider than shoulder width',
-      'Lower the bar to your chest with control',
-      'Press the bar back up to the starting position'
-    ],
-    broScience: 'Remember: the bar should touch your chest, not bounce off it. Control is key to gains.'
-  },
-  {
-    id: '2',
-    name: 'Squats',
-    category: 'Legs',
-    muscleGroups: ['Quadriceps', 'Glutes', 'Hamstrings'],
-    equipment: ['Barbell', 'Squat Rack'],
-    difficulty: 'Intermediate',
-    description: 'Leg day is the most important day. Don\'t skip it or you\'ll look like a chicken.',
-    instructions: [
-      'Position the barbell on your upper back',
-      'Stand with feet shoulder-width apart',
-      'Squat down until thighs are parallel to ground',
-      'Drive back up through your heels'
-    ],
-    broScience: 'Squats are the foundation of all gains. If you\'re not squatting, you\'re not serious about fitness.'
-  },
-  {
-    id: '3',
-    name: 'Deadlift',
-    category: 'Back',
-    muscleGroups: ['Back', 'Hamstrings', 'Glutes'],
-    equipment: ['Barbell'],
-    difficulty: 'Advanced',
-    description: 'The ultimate test of strength. This is where real men are made.',
-    instructions: [
-      'Stand with feet hip-width apart',
-      'Grip the barbell with both hands',
-      'Keep your back straight and chest up',
-      'Lift the bar by driving through your heels'
-    ],
-    broScience: 'Deadlifts are the most functional exercise. They build strength that translates to real life.'
-  },
-  {
-    id: '4',
-    name: 'Pull-ups',
-    category: 'Back',
-    muscleGroups: ['Back', 'Biceps'],
-    equipment: ['Pull-up Bar'],
-    difficulty: 'Intermediate',
-    description: 'The ultimate upper body exercise. If you can\'t do pull-ups, you\'re not ready for the big leagues.',
-    instructions: [
-      'Grab the pull-up bar with palms facing away',
-      'Hang with arms fully extended',
-      'Pull yourself up until chin is over the bar',
-      'Lower yourself back down with control'
-    ],
-    broScience: 'Pull-ups are the true test of relative strength. Bodyweight exercises never lie.'
-  },
-  {
-    id: '5',
-    name: 'Overhead Press',
-    category: 'Shoulders',
-    muscleGroups: ['Shoulders', 'Triceps'],
-    equipment: ['Barbell'],
-    difficulty: 'Intermediate',
-    description: 'Build those boulder shoulders. No one respects a guy with weak shoulders.',
-    instructions: [
-      'Stand with feet shoulder-width apart',
-      'Hold barbell at shoulder level',
-      'Press the bar overhead while keeping core tight',
-      'Lower back to starting position'
-    ],
-    broScience: 'Overhead pressing builds functional strength and those coveted shoulder caps.'
-  }
-];
+import { getExercises, Exercise } from '../services/firebase';
 
 const categories = ['All', 'Chest', 'Back', 'Legs', 'Shoulders', 'Arms', 'Core'];
 
@@ -106,6 +10,27 @@ const WorkoutLibraryScreen = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
+  const [exercises, setExercises] = useState<Exercise[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadExercises();
+  }, []);
+
+  const loadExercises = async () => {
+    try {
+      setLoading(true);
+      const exercisesData = await getExercises();
+      setExercises(exercisesData);
+      setError(null);
+    } catch (err) {
+      console.error('Error loading exercises:', err);
+      setError('Failed to load exercises. Check your connection, brah!');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredExercises = exercises.filter(exercise => {
     const matchesCategory = selectedCategory === 'All' || exercise.category === selectedCategory;
@@ -172,6 +97,30 @@ const WorkoutLibraryScreen = () => {
       </View>
     );
   };
+
+  if (loading) {
+    return (
+      <LinearGradient colors={theme.gradients.background} style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={theme.colors.primary} />
+          <Text style={styles.loadingText}>Loading the gains...</Text>
+        </View>
+      </LinearGradient>
+    );
+  }
+
+  if (error) {
+    return (
+      <LinearGradient colors={theme.gradients.background} style={styles.container}>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={loadExercises}>
+            <Text style={styles.retryButtonText}>Try Again, Brah!</Text>
+          </TouchableOpacity>
+        </View>
+      </LinearGradient>
+    );
+  }
 
   return (
     <LinearGradient
@@ -411,6 +360,36 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.sm,
     paddingVertical: theme.spacing.xs,
     borderRadius: theme.borderRadius.sm,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: theme.fontSizes.body,
+    color: theme.colors.primary,
+    marginTop: theme.spacing.md,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  errorText: {
+    fontSize: theme.fontSizes.body,
+    color: theme.colors.error,
+    marginBottom: theme.spacing.md,
+  },
+  retryButton: {
+    padding: theme.spacing.md,
+    borderRadius: theme.borderRadius.md,
+    backgroundColor: theme.colors.primary,
+  },
+  retryButtonText: {
+    fontSize: theme.fontSizes.body,
+    color: theme.colors.background,
+    fontWeight: 'bold',
   },
 });
 

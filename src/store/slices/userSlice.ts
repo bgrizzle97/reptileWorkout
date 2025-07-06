@@ -1,8 +1,8 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { UserProfile, Achievement } from '../../services/firebase';
+import { SerializableUserProfile, SerializableAchievement } from '../../types/serializable';
 
 interface UserState {
-  profile: UserProfile | null;
+  profile: SerializableUserProfile | null;
   loading: boolean;
   error: string | null;
 }
@@ -17,16 +17,16 @@ const userSlice = createSlice({
   name: 'user',
   initialState,
   reducers: {
-    setProfile: (state, action: PayloadAction<UserProfile | null>) => {
+    setProfile: (state, action: PayloadAction<SerializableUserProfile | null>) => {
       state.profile = action.payload;
       state.error = null;
     },
-    updateProfile: (state, action: PayloadAction<Partial<UserProfile>>) => {
+    updateProfile: (state, action: PayloadAction<Partial<SerializableUserProfile>>) => {
       if (state.profile) {
         state.profile = { ...state.profile, ...action.payload };
       }
     },
-    updateAchievements: (state, action: PayloadAction<Achievement[]>) => {
+    updateAchievements: (state, action: PayloadAction<SerializableAchievement[]>) => {
       if (state.profile) {
         state.profile.achievements = action.payload;
       }

@@ -1,0 +1,21 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users can only access their own data
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Workouts can only be accessed by the user who created them
+    match /workouts/{workoutId} {
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+    }
+    
+    // Exercises are public (read-only)
+    match /exercises/{exerciseId} {
+      allow read: if true;
+      allow write: if false; // Only admin should be able to write exercises
+    }
+  }
+} 

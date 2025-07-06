@@ -4,9 +4,7 @@ import userSlice from './slices/userSlice';
 import workoutSlice from './slices/workoutSlice';
 import exerciseSlice from './slices/exerciseSlice';
 import authSlice from './slices/authSlice';
-
-// Placeholder reducer
-const placeholderReducer = (state = {}, action: any) => state;
+import supplementSlice from './slices/supplementSlice';
 
 export const store = configureStore({
   reducer: {
@@ -14,7 +12,19 @@ export const store = configureStore({
     workouts: workoutSlice,
     exercises: exerciseSlice,
     auth: authSlice,
+    supplements: supplementSlice,
   },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: {
+        // Ignore these action types
+        ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
+        // Ignore these field paths in all actions
+        ignoredActionPaths: ['payload.user', 'payload.createdAt', 'payload.date', 'payload.unlockedAt'],
+        // Ignore these paths in state
+        ignoredPaths: ['auth.user', 'user.profile.createdAt', 'workouts.workouts.date', 'user.profile.achievements.unlockedAt'],
+      },
+    }),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

@@ -13,7 +13,10 @@ import DashboardScreen from '../screens/DashboardScreen';
 import WorkoutLibraryScreen from '../screens/WorkoutLibraryScreen';
 import WorkoutRoutinesScreen from '../screens/WorkoutRoutinesScreen';
 import WorkoutTrackerScreen from '../screens/WorkoutTrackerScreen';
+import WorkoutHistoryScreen from '../screens/WorkoutHistoryScreen';
 import ProfileScreen from '../screens/ProfileScreen';
+import SupplementsScreen from '../screens/SupplementsScreen';
+import SupplementInfoScreen from '../screens/SupplementInfoScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -22,7 +25,16 @@ const AppNavigator = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log('AppNavigator: auth object:', auth);
+    
+    if (!auth) {
+      console.error('AppNavigator: auth is undefined!');
+      setLoading(false);
+      return;
+    }
+
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      console.log('AppNavigator: Auth state changed:', user);
       setUser(user);
       setLoading(false);
     });
@@ -74,9 +86,24 @@ const AppNavigator = () => {
               options={{ title: 'Workout Tracker' }}
             />
             <Stack.Screen 
+              name="WorkoutHistory" 
+              component={WorkoutHistoryScreen}
+              options={{ title: 'Workout History' }}
+            />
+            <Stack.Screen 
               name="Profile" 
               component={ProfileScreen}
               options={{ title: 'Profile' }}
+            />
+            <Stack.Screen 
+              name="Supplements" 
+              component={SupplementsScreen}
+              options={{ title: 'Supplement Store' }}
+            />
+            <Stack.Screen 
+              name="SupplementInfo" 
+              component={SupplementInfoScreen}
+              options={{ title: 'Supplement Guide' }}
             />
           </>
         ) : (

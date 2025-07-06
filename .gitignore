@@ -71,6 +71,11 @@ yarn-error.log
 .env.local
 .env.*.local
 
+# Firebase
+scripts/serviceAccountKey.json
+google-services.json
+GoogleService-Info.plist
+
 # Yarn
 .yarn/*
 !.yarn/patches

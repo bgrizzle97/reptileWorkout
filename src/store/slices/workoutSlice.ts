@@ -1,9 +1,9 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Workout, WorkoutSet } from '../../services/firebase';
+import { SerializableWorkout, WorkoutSet } from '../../types/serializable';
 
 interface WorkoutState {
-  workouts: Workout[];
-  currentWorkout: Workout | null;
+  workouts: SerializableWorkout[];
+  currentWorkout: SerializableWorkout | null;
   loading: boolean;
   error: string | null;
 }
@@ -19,14 +19,14 @@ const workoutSlice = createSlice({
   name: 'workouts',
   initialState,
   reducers: {
-    setWorkouts: (state, action: PayloadAction<Workout[]>) => {
+    setWorkouts: (state, action: PayloadAction<SerializableWorkout[]>) => {
       state.workouts = action.payload;
       state.error = null;
     },
-    addWorkout: (state, action: PayloadAction<Workout>) => {
+    addWorkout: (state, action: PayloadAction<SerializableWorkout>) => {
       state.workouts.unshift(action.payload);
     },
-    updateWorkout: (state, action: PayloadAction<Workout>) => {
+    updateWorkout: (state, action: PayloadAction<SerializableWorkout>) => {
       const index = state.workouts.findIndex(w => w.id === action.payload.id);
       if (index !== -1) {
         state.workouts[index] = action.payload;
@@ -35,7 +35,7 @@ const workoutSlice = createSlice({
     deleteWorkout: (state, action: PayloadAction<string>) => {
       state.workouts = state.workouts.filter(w => w.id !== action.payload);
     },
-    setCurrentWorkout: (state, action: PayloadAction<Workout | null>) => {
+    setCurrentWorkout: (state, action: PayloadAction<SerializableWorkout | null>) => {
       state.currentWorkout = action.payload;
     },
     addSetToCurrentWorkout: (state, action: PayloadAction<WorkoutSet>) => {

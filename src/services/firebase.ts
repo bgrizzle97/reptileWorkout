@@ -17,22 +17,27 @@ import {
   serverTimestamp 
 } from 'firebase/firestore';
 
-// Firebase configuration from environment variables
+// Firebase configuration - hardcoded for now
 const firebaseConfig = {
-  apiKey: process.env.FIREBASE_API_KEY || "your_api_key_here",
-  authDomain: process.env.FIREBASE_AUTH_DOMAIN || "your_project_id.firebaseapp.com",
-  projectId: process.env.FIREBASE_PROJECT_ID || "your_project_id",
-  storageBucket: process.env.FIREBASE_STORAGE_BUCKET || "your_project_id.appspot.com",
-  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID || "your_sender_id",
-  appId: process.env.FIREBASE_APP_ID || "your_app_id",
-  measurementId: process.env.FIREBASE_MEASUREMENT_ID || "your_measurement_id"
+  apiKey: "AIzaSyDjkuZOPnqJgajCdvBILkEMSOpYBuaahg0",
+  authDomain: "reptiledysfunction-2601f.firebaseapp.com",
+  projectId: "reptiledysfunction-2601f",
+  storageBucket: "reptiledysfunction-2601f.firebasestorage.app",
+  messagingSenderId: "527592177863",
+  appId: "1:527592177863:web:9249c38abd6a24eae87ee2",
+  measurementId: ""
 };
+
+console.log('Initializing Firebase with config:', firebaseConfig);
+
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
 // Initialize Firebase services
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+
+console.log('Firebase initialized successfully. Auth object:', auth);
 
 // Data types
 export interface UserProfile {
@@ -94,12 +99,31 @@ export interface Achievement {
   unlockedAt?: Date;
 }
 
+export interface Supplement {
+  id: string;
+  name: string;
+  category: 'Pre-Workout' | 'Post-Workout' | 'Protein' | 'Amino Acids' | 'Vitamins' | 'Other';
+  description: string;
+  benefits: string[];
+  dosage: string;
+  timing: string;
+  broScience: string;
+  price: number;
+  rating: number;
+  imageUrl?: string;
+}
+
 // Authentication functions
 export const signUp = async (email: string, password: string) => {
   try {
+    console.log('Attempting to sign up user:', email);
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    console.log('User created successfully:', userCredential.user.uid);
     return userCredential.user;
-  } catch (error) {
+  } catch (error: any) {
+    console.error('Sign up error:', error);
+    console.error('Error code:', error.code);
+    console.error('Error message:', error.message);
     throw error;
   }
 };
@@ -124,6 +148,9 @@ export const logOut = async () => {
 // User profile functions
 export const createUserProfile = async (userId: string, userData: Partial<UserProfile>) => {
   try {
+    console.log('Creating user profile for:', userId);
+    console.log('User data:', userData);
+    
     const defaultProfile: UserProfile = {
       id: userId,
       email: userData.email || '',
@@ -141,14 +168,20 @@ export const createUserProfile = async (userId: string, userData: Partial<UserPr
       achievements: getDefaultAchievements(),
     };
 
+    console.log('Default profile:', defaultProfile);
+
     await setDoc(doc(db, 'users', userId), {
       ...defaultProfile,
       ...userData,
       createdAt: serverTimestamp(),
     });
     
+    console.log('User profile created successfully');
     return defaultProfile;
-  } catch (error) {
+  } catch (error: any) {
+    console.error('Create user profile error:', error);
+    console.error('Error code:', error.code);
+    console.error('Error message:', error.message);
     throw error;
   }
 };
@@ -203,6 +236,20 @@ export const updateWorkout = async (workoutId: string, updates: Partial<Workout>
 
 export const getUserWorkouts = async (userId: string): Promise<Workout[]> => {
   try {
+    // First, check if user has any workouts
+    const checkQuery = query(
+      collection(db, 'workouts'),
+      where('userId', '==', userId)
+    );
+    
+    const checkSnapshot = await getDocs(checkQuery);
+    
+    // If no workouts exist, return empty array
+    if (checkSnapshot.empty) {
+      return [];
+    }
+    
+    // If workouts exist, get them ordered by date
     const q = query(
       collection(db, 'workouts'),
       where('userId', '==', userId),
@@ -216,7 +263,27 @@ export const getUserWorkouts = async (userId: string): Promise<Workout[]> => {
       date: doc.data().date?.toDate() || new Date(),
     })) as Workout[];
   } catch (error) {
-    throw error;
+    console.error('Error getting user workouts:', error);
+    // If there's an index error, try without ordering
+    if (error.code === 'failed-precondition' || error.code === 'unimplemented') {
+      try {
+        const simpleQuery = query(
+          collection(db, 'workouts'),
+          where('userId', '==', userId)
+        );
+        
+        const simpleSnapshot = await getDocs(simpleQuery);
+        return simpleSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          date: doc.data().date?.toDate() || new Date(),
+        })) as Workout[];
+      } catch (fallbackError) {
+        console.error('Fallback query also failed:', fallbackError);
+        return [];
+      }
+    }
+    return [];
   }
 };
 
@@ -279,6 +346,45 @@ export const getExercisesByCategory = async (category: string): Promise<Exercise
       id: doc.id,
       ...doc.data(),
     })) as Exercise[];
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Supplement functions
+export const getSupplements = async (): Promise<Supplement[]> => {
+  try {
+    const querySnapshot = await getDocs(collection(db, 'supplements'));
+    return querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as Supplement[];
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getSupplementsByCategory = async (category: string): Promise<Supplement[]> => {
+  try {
+    const q = query(
+      collection(db, 'supplements'),
+      where('category', '==', category)
+    );
+    
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as Supplement[];
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const saveSupplement = async (supplement: Omit<Supplement, 'id'>): Promise<string> => {
+  try {
+    const docRef = await addDoc(collection(db, 'supplements'), supplement);
+    return docRef.id;
   } catch (error) {
     throw error;
   }

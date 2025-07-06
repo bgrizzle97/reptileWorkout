@@ -1,68 +1,94 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert, ActivityIndicator } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { theme } from '../constants/theme';
-import { useFirebase } from '../hooks/useFirebase';
-import { useAppSelector } from '../store';
-import { WorkoutSet } from '../services/firebase';
+import { auth, saveWorkout, getExercises, Exercise, WorkoutSet } from '../services/firebase';
 
-interface Workout {
-  id: string;
-  date: Date;
+interface CurrentWorkout {
   name: string;
+  startTime: Date;
   sets: WorkoutSet[];
   completed: boolean;
-  duration?: number; // in minutes
 }
 
-const WorkoutTrackerScreen = () => {
-  const { saveWorkoutData, user } = useFirebase();
-  const { currentWorkout } = useAppSelector((state: any) => state.workouts);
-  
+const WorkoutTrackerScreen = ({ navigation }: any) => {
   const [workoutName, setWorkoutName] = useState('');
+  const [currentWorkout, setCurrentWorkout] = useState<CurrentWorkout | null>(null);
+  const [exercises, setExercises] = useState<Exercise[]>([]);
+  const [loading, setLoading] = useState(false);
   const [selectedExercise, setSelectedExercise] = useState('');
   const [weight, setWeight] = useState('');
   const [reps, setReps] = useState('');
+  const [workoutDuration, setWorkoutDuration] = useState(0);
 
-  // Sample exercises for quick selection
-  const quickExercises = [
-    { id: '1', name: 'Bench Press', category: 'Chest' },
-    { id: '2', name: 'Squats', category: 'Legs' },
-    { id: '3', name: 'Deadlift', category: 'Back' },
-    { id: '4', name: 'Pull-ups', category: 'Back' },
-    { id: '5', name: 'Overhead Press', category: 'Shoulders' },
-  ];
+  useEffect(() => {
+    loadExercises();
+  }, []);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (currentWorkout && !currentWorkout.completed) {
+      interval = setInterval(() => {
+        const duration = Math.floor((Date.now() - currentWorkout.startTime.getTime()) / 1000 / 60);
+        setWorkoutDuration(duration);
+      }, 60000); // Update every minute
+    }
+    return () => clearInterval(interval);
+  }, [currentWorkout]);
+
+  const loadExercises = async () => {
+    try {
+      const exercisesData = await getExercises();
+      setExercises(exercisesData);
+    } catch (error) {
+      console.error('Error loading exercises:', error);
+    }
+  };
+
+  const getMotivationalQuote = () => {
+    const quotes = [
+      "Time to feed the pump!",
+      "The weights are getting lonely, brah!",
+      "Every rep is a step closer to greatness!",
+      "Your future self is watching you right now!",
+      "The only bad workout is the one that didn't happen!",
+      "Gains don't happen by accident!",
+      "The mirror is your biggest critic and your biggest fan!",
+      "Leg day is not optional, it's mandatory!"
+    ];
+    return quotes[Math.floor(Math.random() * quotes.length)];
+  };
 
   const startWorkout = () => {
     if (!workoutName.trim()) {
-      Alert.alert('Error', 'Please enter a workout name');
+      Alert.alert('Bro, what are you doing?', 'Enter a workout name, you absolute unit!');
       return;
     }
 
-    if (!user) {
-      Alert.alert('Error', 'Please log in to start a workout');
+    if (!auth.currentUser) {
+      Alert.alert('Authentication Error', 'Please log in to start a workout, brah!');
       return;
     }
 
-    const newWorkout = {
+    const newWorkout: CurrentWorkout = {
       name: workoutName,
-      date: new Date(),
+      startTime: new Date(),
       sets: [],
       completed: false,
     };
 
-    // For now, we'll just show the workout form
-    // In a real app, you'd save this to Redux state
+    setCurrentWorkout(newWorkout);
     setWorkoutName('');
+    Alert.alert('Workout Started!', 'Time to get absolutely peeled! 💪');
   };
 
   const addSet = () => {
     if (!selectedExercise || !weight || !reps) {
-      Alert.alert('Error', 'Please fill in all fields');
+      Alert.alert('Incomplete Set', 'Fill in all the fields, bro! No half-reps here!');
       return;
     }
 
-    const exercise = quickExercises.find(ex => ex.id === selectedExercise);
+    const exercise = exercises.find(ex => ex.id === selectedExercise);
     if (!exercise) return;
 
     const newSet: WorkoutSet = {
@@ -73,101 +99,165 @@ const WorkoutTrackerScreen = () => {
       completed: false,
     };
 
-    // For now, we'll just show the set
-    // In a real app, you'd add this to the current workout
+    setCurrentWorkout(prev => prev ? {
+      ...prev,
+      sets: [...prev.sets, newSet]
+    } : null);
+
     setSelectedExercise('');
     setWeight('');
     setReps('');
+
+    Alert.alert('Set Added!', 'Another step closer to greatness! 🏋️');
+  };
+
+  const toggleSetCompletion = (index: number) => {
+    if (!currentWorkout) return;
+
+    const updatedSets = [...currentWorkout.sets];
+    updatedSets[index].completed = !updatedSets[index].completed;
+
+    setCurrentWorkout({
+      ...currentWorkout,
+      sets: updatedSets
+    });
   };
 
   const finishWorkout = async () => {
-    if (!user) {
-      Alert.alert('Error', 'Please log in to save your workout');
+    if (!currentWorkout || !auth.currentUser) {
+      Alert.alert('Error', 'No active workout or user not logged in!');
       return;
     }
 
-    // This would be the actual workout data from state
-    const workoutData = {
-      name: 'Sample Workout',
-      date: new Date(),
-      sets: [
-        {
-          exerciseId: '1',
-          exerciseName: 'Bench Press',
-          weight: 135,
-          reps: 10,
-          completed: true,
-        },
-      ],
-      completed: true,
-    };
-
-    try {
-      const workoutId = await saveWorkoutData(workoutData);
-      if (workoutId) {
-        Alert.alert(
-          'Workout Complete!',
-          'Great job! Your workout has been saved. The gains are real!',
-          [{ text: 'OK' }]
-        );
-      }
-    } catch (error: any) {
-      Alert.alert('Error', 'Failed to save workout. Please try again.');
+    if (currentWorkout.sets.length === 0) {
+      Alert.alert('Empty Workout', 'Bro, you need to do some sets first! No gains from an empty workout!');
+      return;
     }
+
+    setLoading(true);
+    try {
+      const workoutData = {
+        userId: auth.currentUser.uid,
+        name: currentWorkout.name,
+        date: currentWorkout.startTime,
+        sets: currentWorkout.sets,
+        completed: true,
+        duration: workoutDuration,
+        totalWeight: currentWorkout.sets.reduce((sum, set) => sum + (set.weight * set.reps), 0)
+      };
+
+      await saveWorkout(workoutData);
+      
+      Alert.alert(
+        'Workout Complete! 🎉',
+        `Great job, brah! You just crushed it for ${workoutDuration} minutes and moved ${workoutData.totalWeight} total pounds! The gains are real!`,
+        [
+          {
+            text: 'View Progress',
+            onPress: () => navigation.navigate('Profile')
+          },
+          {
+            text: 'Start Another',
+            onPress: () => {
+              setCurrentWorkout(null);
+              setWorkoutDuration(0);
+            }
+          }
+        ]
+      );
+    } catch (error) {
+      console.error('Error saving workout:', error);
+      Alert.alert('Error', 'Failed to save workout. Check your connection, brah!');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const renderWorkoutStats = () => {
+    if (!currentWorkout) return null;
+
+    const completedSets = currentWorkout.sets.filter(set => set.completed).length;
+    const totalWeight = currentWorkout.sets.reduce((sum, set) => sum + (set.weight * set.reps), 0);
+
+    return (
+      <View style={styles.statsContainer}>
+        <LinearGradient colors={theme.gradients.card} style={styles.statCard}>
+          <Text style={styles.statNumber}>{currentWorkout.sets.length}</Text>
+          <Text style={styles.statLabel}>Total Sets</Text>
+        </LinearGradient>
+        
+        <LinearGradient colors={theme.gradients.card} style={styles.statCard}>
+          <Text style={styles.statNumber}>{completedSets}</Text>
+          <Text style={styles.statLabel}>Completed</Text>
+        </LinearGradient>
+        
+        <LinearGradient colors={theme.gradients.card} style={styles.statCard}>
+          <Text style={styles.statNumber}>{workoutDuration}</Text>
+          <Text style={styles.statLabel}>Minutes</Text>
+        </LinearGradient>
+        
+        <LinearGradient colors={theme.gradients.card} style={styles.statCard}>
+          <Text style={styles.statNumber}>{totalWeight}</Text>
+          <Text style={styles.statLabel}>Total Weight</Text>
+        </LinearGradient>
+      </View>
+    );
   };
 
   const renderCurrentWorkout = () => {
     if (!currentWorkout) return null;
 
     return (
-      <LinearGradient
-        colors={theme.gradients.card}
-        style={styles.workoutCard}
-      >
-        <View style={styles.workoutHeader}>
-          <Text style={styles.workoutTitle}>{currentWorkout.name}</Text>
-          <Text style={styles.workoutDate}>
-            {currentWorkout.date.toLocaleDateString()}
-          </Text>
-        </View>
+      <View style={styles.workoutContainer}>
+        <LinearGradient colors={theme.gradients.card} style={styles.workoutCard}>
+          <View style={styles.workoutHeader}>
+            <Text style={styles.workoutTitle}>{currentWorkout.name}</Text>
+            <Text style={styles.workoutSubtitle}>{getMotivationalQuote()}</Text>
+            <Text style={styles.workoutDate}>
+              Started at {currentWorkout.startTime.toLocaleTimeString()}
+            </Text>
+          </View>
 
-        <View style={styles.setsContainer}>
-          <Text style={styles.setsTitle}>Sets ({currentWorkout.sets.length})</Text>
-          {currentWorkout.sets.map((set: any, index: number) => (
-            <TouchableOpacity
-              key={index}
-              onPress={() => {/* Toggle set completion */}}
-            >
-              <LinearGradient
-                colors={set.completed ? theme.gradients.greenGlow : theme.gradients.card}
-                style={styles.setItem}
+          {renderWorkoutStats()}
+
+          <View style={styles.setsContainer}>
+            <Text style={styles.setsTitle}>Your Sets ({currentWorkout.sets.length})</Text>
+            {currentWorkout.sets.map((set, index) => (
+              <TouchableOpacity
+                key={index}
+                onPress={() => toggleSetCompletion(index)}
               >
-                <Text style={styles.setExercise}>{set.exerciseName}</Text>
-                <Text style={styles.setDetails}>
-                  {set.weight} lbs × {set.reps} reps
-                </Text>
-                <Text style={styles.setStatus}>
-                  {set.completed ? '✓ Completed' : 'Tap to complete'}
-                </Text>
-              </LinearGradient>
-            </TouchableOpacity>
-          ))}
-        </View>
+                <LinearGradient
+                  colors={set.completed ? theme.gradients.greenGlow : theme.gradients.card}
+                  style={styles.setItem}
+                >
+                  <Text style={styles.setExercise}>{set.exerciseName}</Text>
+                  <Text style={styles.setDetails}>
+                    {set.weight} lbs × {set.reps} reps = {set.weight * set.reps} lbs
+                  </Text>
+                  <Text style={styles.setStatus}>
+                    {set.completed ? '✓ Completed' : 'Tap to complete'}
+                  </Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            ))}
+          </View>
 
-        <View style={styles.workoutActions}>
           <TouchableOpacity
-            style={styles.actionButton}
+            style={styles.finishButton}
             onPress={finishWorkout}
+            disabled={loading}
           >
-            <LinearGradient
-              colors={theme.gradients.cyanGlow}
-              style={styles.finishButton}
-            >
-              <Text style={styles.finishButtonText}>Finish Workout</Text>
+            <LinearGradient colors={theme.gradients.cyanGlow} style={styles.finishButtonGradient}>
+              {loading ? (
+                <ActivityIndicator color={theme.colors.background} />
+              ) : (
+                <Text style={styles.finishButtonText}>Finish Workout</Text>
+              )}
             </LinearGradient>
           </TouchableOpacity>
-        </View>
-      </LinearGradient>
+        </LinearGradient>
+      </View>
     );
   };
 
@@ -175,16 +265,13 @@ const WorkoutTrackerScreen = () => {
     if (!currentWorkout) return null;
 
     return (
-      <LinearGradient
-        colors={theme.gradients.card}
-        style={styles.addSetForm}
-      >
+      <LinearGradient colors={theme.gradients.card} style={styles.addSetForm}>
         <Text style={styles.formTitle}>Add Set</Text>
         
-        <View style={styles.formRow}>
-          <Text style={styles.formLabel}>Exercise:</Text>
+        <View style={styles.exerciseSelector}>
+          <Text style={styles.formLabel}>Choose Exercise:</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {quickExercises.map(exercise => (
+            {exercises.map(exercise => (
               <TouchableOpacity
                 key={exercise.id}
                 onPress={() => setSelectedExercise(exercise.id)}
@@ -205,7 +292,7 @@ const WorkoutTrackerScreen = () => {
           </ScrollView>
         </View>
 
-        <View style={styles.formRow}>
+        <View style={styles.inputRow}>
           <View style={styles.inputContainer}>
             <Text style={styles.formLabel}>Weight (lbs):</Text>
             <TextInput
@@ -231,10 +318,7 @@ const WorkoutTrackerScreen = () => {
         </View>
 
         <TouchableOpacity onPress={addSet}>
-          <LinearGradient
-            colors={theme.gradients.greenGlow}
-            style={styles.addSetButton}
-          >
+          <LinearGradient colors={theme.gradients.greenGlow} style={styles.addSetButton}>
             <Text style={styles.addSetButtonText}>Add Set</Text>
           </LinearGradient>
         </TouchableOpacity>
@@ -383,6 +467,11 @@ const styles = StyleSheet.create({
     color: theme.colors.primary,
     ...theme.effects.textGlow,
   },
+  workoutSubtitle: {
+    fontSize: theme.fontSizes.body,
+    color: theme.colors.textSecondary,
+    marginTop: theme.spacing.xs,
+  },
   workoutDate: {
     fontSize: theme.fontSizes.caption,
     color: theme.colors.textSecondary,
@@ -429,6 +518,11 @@ const styles = StyleSheet.create({
     padding: theme.spacing.lg,
     ...theme.shadows.neon,
   },
+  finishButtonGradient: {
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.lg,
+    ...theme.shadows.neon,
+  },
   finishButtonText: {
     color: theme.colors.background,
     fontSize: theme.fontSizes.body,
@@ -447,28 +541,16 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.lg,
     ...theme.effects.textGlow,
   },
-  formRow: {
-    marginBottom: theme.spacing.lg,
-  },
   formLabel: {
     fontSize: theme.fontSizes.body,
     color: theme.colors.text,
     marginBottom: theme.spacing.sm,
   },
-  exerciseButton: {
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-    borderRadius: theme.borderRadius.md,
-    marginRight: theme.spacing.sm,
-    ...theme.shadows.glow,
+  exerciseSelector: {
+    marginBottom: theme.spacing.lg,
   },
-  exerciseButtonText: {
-    fontSize: theme.fontSizes.caption,
-    color: theme.colors.text,
-  },
-  selectedExerciseText: {
-    color: theme.colors.background,
-    fontWeight: 'bold',
+  inputRow: {
+    marginBottom: theme.spacing.lg,
   },
   inputContainer: {
     flex: 1,
@@ -484,6 +566,42 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSizes.body,
     fontWeight: 'bold',
     textAlign: 'center',
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: theme.spacing.lg,
+  },
+  statCard: {
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.md,
+    flex: 1,
+    ...theme.shadows.glow,
+  },
+  statNumber: {
+    fontSize: theme.fontSizes.body,
+    fontWeight: 'bold',
+    color: theme.colors.text,
+  },
+  statLabel: {
+    fontSize: theme.fontSizes.caption,
+    color: theme.colors.textSecondary,
+    marginTop: theme.spacing.xs,
+  },
+  exerciseButton: {
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+    borderRadius: theme.borderRadius.md,
+    marginRight: theme.spacing.sm,
+    ...theme.shadows.glow,
+  },
+  exerciseButtonText: {
+    fontSize: theme.fontSizes.caption,
+    color: theme.colors.text,
+  },
+  selectedExerciseText: {
+    color: theme.colors.background,
+    fontWeight: 'bold',
   },
 });
 

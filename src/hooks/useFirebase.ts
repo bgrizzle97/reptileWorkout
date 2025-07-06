@@ -37,6 +37,12 @@ import {
   Exercise,
 } from '../services/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
+import { 
+  convertUserToSerializable, 
+  convertUserProfileToSerializable, 
+  convertWorkoutsToSerializable,
+  convertWorkoutToSerializable 
+} from '../types/serializable';
 
 export const useFirebase = () => {
   const dispatch = useAppDispatch();
@@ -46,7 +52,7 @@ export const useFirebase = () => {
   // Auth state listener
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      dispatch(setUser(user));
+      dispatch(setUser(convertUserToSerializable(user)));
       
       if (user) {
         try {
@@ -61,11 +67,11 @@ export const useFirebase = () => {
             });
           }
           
-          dispatch(setProfile(userProfile));
+          dispatch(setProfile(convertUserProfileToSerializable(userProfile)));
           
           // Load user's workouts
           const workouts = await getUserWorkouts(user.uid);
-          dispatch(setWorkouts(workouts));
+          dispatch(setWorkouts(convertWorkoutsToSerializable(workouts)));
           
           // Load exercises
           const exercises = await getExercises();
@@ -116,7 +122,7 @@ export const useFirebase = () => {
       const workoutId = await saveWorkout(workoutWithUser);
       const savedWorkout = { ...workoutWithUser, id: workoutId };
       
-      dispatch(addWorkout(savedWorkout));
+      dispatch(addWorkout(convertWorkoutToSerializable(savedWorkout)));
       
       // Update user stats
       await updateUserStats(user.uid, savedWorkout);
@@ -126,7 +132,10 @@ export const useFirebase = () => {
         const updatedProfile = { ...profile, totalWorkouts: profile.totalWorkouts + 1 };
         const updatedAchievements = await checkAndUpdateAchievements(user.uid, updatedProfile);
         dispatch(updateProfile(updatedProfile));
-        dispatch(updateAchievements(updatedAchievements));
+        dispatch(updateAchievements(updatedAchievements.map(achievement => ({
+          ...achievement,
+          unlockedAt: achievement.unlockedAt instanceof Date ? achievement.unlockedAt.toISOString() : achievement.unlockedAt,
+        }))));
       }
       
       return workoutId;
@@ -142,7 +151,8 @@ export const useFirebase = () => {
     try {
       dispatch(setLoading(true));
       await updateWorkoutFirebase(workoutId, updates);
-      dispatch(updateWorkout({ id: workoutId, ...updates } as Workout));
+      const updatedWorkout = { id: workoutId, ...updates } as Workout;
+      dispatch(updateWorkout(convertWorkoutToSerializable(updatedWorkout)));
     } catch (error: any) {
       dispatch(setError(error.message));
     } finally {
