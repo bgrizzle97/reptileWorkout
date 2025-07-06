@@ -21,12 +21,17 @@ const AchievementsScreen = ({ navigation }: AchievementsScreenProps) => {
   const loadUserProfile = async () => {
     try {
       if (auth.currentUser) {
+        console.log('Loading user profile for:', auth.currentUser.uid);
         const profile = await getUserProfile(auth.currentUser.uid);
+        console.log('User profile loaded:', profile);
         setUserProfile(profile);
         
         // Update achievements with user stats
         const unlockedAchievements = getUnlockedAchievements(profile);
+        console.log('Achievements updated:', unlockedAchievements.length);
         setAchievements(unlockedAchievements);
+      } else {
+        console.log('No current user found');
       }
     } catch (error) {
       console.error('Error loading user profile:', error);

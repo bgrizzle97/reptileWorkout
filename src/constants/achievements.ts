@@ -243,6 +243,8 @@ export const ACHIEVEMENTS: Achievement[] = [
 ];
 
 export const getAchievementProgress = (achievement: Achievement, userStats: any): number => {
+  if (!userStats) return 0;
+  
   switch (achievement.type) {
     case 'workout':
       return Math.min(userStats.totalWorkouts || 0, achievement.requirement);
@@ -265,6 +267,8 @@ export const checkAchievementUnlock = (achievement: Achievement, userStats: any)
 };
 
 export const getUnlockedAchievements = (userStats: any): Achievement[] => {
+  if (!userStats) return ACHIEVEMENTS.map(achievement => ({ ...achievement, unlocked: false }));
+  
   return ACHIEVEMENTS.map(achievement => ({
     ...achievement,
     unlocked: checkAchievementUnlock(achievement, userStats),
@@ -277,6 +281,8 @@ export const getRecentUnlockedAchievements = (userStats: any): Achievement[] => 
 };
 
 export const getNextAchievement = (userStats: any): Achievement | null => {
+  if (!userStats) return ACHIEVEMENTS[0]; // Return first achievement if no user stats
+  
   const unlockedAchievements = getUnlockedAchievements(userStats);
   const lockedAchievements = unlockedAchievements.filter(achievement => !achievement.unlocked);
   
