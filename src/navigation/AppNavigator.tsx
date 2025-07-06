@@ -17,6 +17,9 @@ import WorkoutHistoryScreen from '../screens/WorkoutHistoryScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import SupplementsScreen from '../screens/SupplementsScreen';
 import SupplementInfoScreen from '../screens/SupplementInfoScreen';
+import AchievementsScreen from '../screens/AchievementsScreen';
+import PersonalizationScreen from '../screens/PersonalizationScreen';
+import AnalyticsScreen from '../screens/AnalyticsScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -104,6 +107,21 @@ const AppNavigator = () => {
               name="SupplementInfo" 
               component={SupplementInfoScreen}
               options={{ title: 'Supplement Guide' }}
+            />
+            <Stack.Screen 
+              name="Achievements" 
+              component={AchievementsScreen}
+              options={{ title: 'Achievement Hall' }}
+            />
+            <Stack.Screen 
+              name="Personalization" 
+              component={PersonalizationScreen}
+              options={{ title: 'Personalization' }}
+            />
+            <Stack.Screen 
+              name="Analytics" 
+              component={AnalyticsScreen}
+              options={{ title: 'Analytics Dashboard' }}
             />
           </>
         ) : (

@@ -240,6 +240,45 @@ const DashboardScreen = ({ navigation }: any) => {
               <Text style={styles.menuSubtitle}>Learn about gym supplements</Text>
             </TouchableOpacity>
           </LinearGradient>
+
+          <LinearGradient
+            colors={theme.gradients.card}
+            style={styles.menuItem}
+          >
+            <TouchableOpacity 
+              style={styles.menuTouchable}
+              onPress={() => navigation.navigate('Achievements')}
+            >
+              <Text style={styles.menuTitle}>Achievement Hall</Text>
+              <Text style={styles.menuSubtitle}>Unlock badges and rewards</Text>
+            </TouchableOpacity>
+          </LinearGradient>
+
+          <LinearGradient
+            colors={theme.gradients.card}
+            style={styles.menuItem}
+          >
+            <TouchableOpacity 
+              style={styles.menuTouchable}
+              onPress={() => navigation.navigate('Personalization')}
+            >
+              <Text style={styles.menuTitle}>Personalization</Text>
+              <Text style={styles.menuSubtitle}>Customize your experience</Text>
+            </TouchableOpacity>
+          </LinearGradient>
+
+          <LinearGradient
+            colors={theme.gradients.card}
+            style={styles.menuItem}
+          >
+            <TouchableOpacity 
+              style={styles.menuTouchable}
+              onPress={() => navigation.navigate('Analytics')}
+            >
+              <Text style={styles.menuTitle}>Analytics</Text>
+              <Text style={styles.menuSubtitle}>Track your progress</Text>
+            </TouchableOpacity>
+          </LinearGradient>
         </View>
       </ScrollView>
     </LinearGradient>
