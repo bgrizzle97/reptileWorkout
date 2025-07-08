@@ -1,18 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, FlatList, ActivityIndicator } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import { theme } from '../constants/theme';
-import { getExercises, Exercise } from '../services/firebase';
+import { useAppSelector } from '../store';
+import { themeOptionsMap } from '../store/slices/themeSlice';
+import { getExercises } from '../services/exercises';
+import { allExercises } from '../data/allExercises';
+import { Exercise } from '../types';
 
 const categories = ['All', 'Chest', 'Back', 'Legs', 'Shoulders', 'Arms', 'Core'];
+const equipmentTypes = ['All', 'barbell', 'dumbbell', 'cable', 'bodyweight'];
 
 const WorkoutLibraryScreen = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedEquipment, setSelectedEquipment] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const currentThemeId = useAppSelector((state) => state.theme.current);
+  const theme = themeOptionsMap[currentThemeId];
+  const styles = getStyles(theme);
 
   useEffect(() => {
     loadExercises();
@@ -21,7 +29,8 @@ const WorkoutLibraryScreen = () => {
   const loadExercises = async () => {
     try {
       setLoading(true);
-      const exercisesData = await getExercises();
+      // Use the combined exercises data
+      const exercisesData = allExercises;
       setExercises(exercisesData);
       setError(null);
     } catch (err) {
@@ -34,9 +43,10 @@ const WorkoutLibraryScreen = () => {
 
   const filteredExercises = exercises.filter(exercise => {
     const matchesCategory = selectedCategory === 'All' || exercise.category === selectedCategory;
+    const matchesEquipment = selectedEquipment === 'All' || exercise.equipmentType === selectedEquipment;
     const matchesSearch = exercise.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          exercise.description.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
+    return matchesCategory && matchesEquipment && matchesSearch;
   });
 
   const renderExerciseItem = ({ item }: { item: Exercise }) => (
@@ -52,7 +62,9 @@ const WorkoutLibraryScreen = () => {
         </Text>
         <View style={styles.exerciseTags}>
           <Text style={styles.tag}>{item.difficulty}</Text>
-          <Text style={styles.tag}>{item.equipment[0]}</Text>
+          <Text style={styles.tag}>
+            {item.equipment.length > 0 ? item.equipment[0] : item.equipmentType}
+          </Text>
         </View>
       </LinearGradient>
     </TouchableOpacity>
@@ -91,7 +103,9 @@ const WorkoutLibraryScreen = () => {
           
           <View style={styles.detailTags}>
             <Text style={styles.detailTag}>Difficulty: {selectedExercise.difficulty}</Text>
-            <Text style={styles.detailTag}>Equipment: {selectedExercise.equipment.join(', ')}</Text>
+            <Text style={styles.detailTag}>
+              Equipment: {selectedExercise.equipment.length > 0 ? selectedExercise.equipment.join(', ') : selectedExercise.equipmentType}
+            </Text>
           </View>
         </LinearGradient>
       </View>
@@ -170,6 +184,30 @@ const WorkoutLibraryScreen = () => {
         </ScrollView>
       </View>
 
+      <View style={styles.equipmentContainer}>
+        <Text style={styles.filterLabel}>Equipment Type:</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          {equipmentTypes.map(equipment => (
+            <TouchableOpacity
+              key={equipment}
+              onPress={() => setSelectedEquipment(equipment)}
+            >
+              <LinearGradient
+                colors={selectedEquipment === equipment ? theme.gradients.cyanGlow : theme.gradients.card}
+                style={styles.equipmentButton}
+              >
+                <Text style={[
+                  styles.equipmentText,
+                  selectedEquipment === equipment && styles.selectedEquipmentText
+                ]}>
+                  {equipment === 'All' ? 'All Equipment' : equipment.charAt(0).toUpperCase() + equipment.slice(1)}
+                </Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+
       <FlatList
         data={filteredExercises}
         renderItem={renderExerciseItem}
@@ -183,7 +221,7 @@ const WorkoutLibraryScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -232,6 +270,32 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   selectedCategoryText: {
+    color: theme.colors.background,
+    fontWeight: 'bold',
+  },
+  equipmentContainer: {
+    paddingHorizontal: theme.spacing.lg,
+    marginBottom: theme.spacing.md,
+  },
+  filterLabel: {
+    fontSize: theme.fontSizes.subheading,
+    fontWeight: 'bold',
+    color: theme.colors.primary,
+    marginBottom: theme.spacing.sm,
+  },
+  equipmentButton: {
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.md,
+    borderRadius: theme.borderRadius.md,
+    marginRight: theme.spacing.sm,
+    ...theme.shadows.glow,
+  },
+  equipmentText: {
+    color: theme.colors.text,
+    fontSize: theme.fontSizes.body,
+    fontWeight: '500',
+  },
+  selectedEquipmentText: {
     color: theme.colors.background,
     fontWeight: 'bold',
   },
@@ -378,7 +442,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: theme.fontSizes.body,
-    color: theme.colors.error,
+    color: theme.colors.warning,
     marginBottom: theme.spacing.md,
   },
   retryButton: {

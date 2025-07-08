@@ -1,13 +1,18 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import { theme } from '../constants/theme';
+import { useAppSelector } from '../store';
+import { themeOptionsMap } from '../store/slices/themeSlice';
 
 interface SupplementInfoScreenProps {
   navigation: any;
 }
 
 const SupplementInfoScreen = ({ navigation }: SupplementInfoScreenProps) => {
+  const currentThemeId = useAppSelector((state) => state.theme.current);
+  const theme = themeOptionsMap[currentThemeId];
+  const styles = getStyles(theme);
+
   const supplementCategories = [
     {
       title: 'Pre-Workout Supplements',
@@ -216,7 +221,7 @@ const SupplementInfoScreen = ({ navigation }: SupplementInfoScreenProps) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
   },

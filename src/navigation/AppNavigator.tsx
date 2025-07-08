@@ -20,6 +20,11 @@ import SupplementInfoScreen from '../screens/SupplementInfoScreen';
 import AchievementsScreen from '../screens/AchievementsScreen';
 import PersonalizationScreen from '../screens/PersonalizationScreen';
 import AnalyticsScreen from '../screens/AnalyticsScreen';
+import SocialScreen from '../screens/SocialScreen';
+import FriendsScreen from '../screens/FriendsScreen';
+import AIRecommendationsScreen from '../screens/AIRecommendationsScreen';
+import EditProfileScreen from '../screens/EditProfileScreen';
+import NotificationsScreen from '../screens/NotificationsScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -99,6 +104,16 @@ const AppNavigator = () => {
               options={{ title: 'Profile' }}
             />
             <Stack.Screen 
+              name="Notifications" 
+              component={NotificationsScreen}
+              options={{ title: 'Notifications' }}
+            />
+            <Stack.Screen 
+              name="EditProfile" 
+              component={EditProfileScreen}
+              options={{ title: 'Edit Profile' }}
+            />
+            <Stack.Screen 
               name="Supplements" 
               component={SupplementsScreen}
               options={{ title: 'Supplement Store' }}
@@ -122,6 +137,21 @@ const AppNavigator = () => {
               name="Analytics" 
               component={AnalyticsScreen}
               options={{ title: 'Analytics Dashboard' }}
+            />
+            <Stack.Screen 
+              name="Social" 
+              component={SocialScreen}
+              options={{ title: 'Social Hub' }}
+            />
+            <Stack.Screen 
+              name="Friends" 
+              component={FriendsScreen}
+              options={{ title: 'Friends' }}
+            />
+            <Stack.Screen 
+              name="AIRecommendations" 
+              component={AIRecommendationsScreen}
+              options={{ title: 'AI Recommendations' }}
             />
           </>
         ) : (

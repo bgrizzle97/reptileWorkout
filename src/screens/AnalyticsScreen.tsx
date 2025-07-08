@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from
 import LinearGradient from 'react-native-linear-gradient';
 import { theme } from '../constants/theme';
 import { auth, getUserProfile, UserProfile } from '../services/firebase';
+import { useAppSelector } from '../store';
+import { themeOptionsMap } from '../store/slices/themeSlice';
 
 interface AnalyticsScreenProps {
   navigation: any;
@@ -36,6 +38,9 @@ const AnalyticsScreen = ({ navigation }: AnalyticsScreenProps) => {
     totalWeight: 0,
     averageWeight: 0,
   });
+  const currentThemeId = useAppSelector((state) => state.theme.current);
+  const theme = themeOptionsMap[currentThemeId];
+  const styles = getStyles(theme);
 
   useEffect(() => {
     loadUserProfile();
@@ -48,8 +53,10 @@ const AnalyticsScreen = ({ navigation }: AnalyticsScreenProps) => {
         setUserProfile(profile);
         
         // Calculate stats from user profile
-        const calculatedStats = calculateStats(profile);
-        setStats(calculatedStats);
+        if (profile) {
+          const calculatedStats = calculateStats(profile);
+          setStats(calculatedStats);
+        }
       }
     } catch (error) {
       console.error('Error loading user profile:', error);
@@ -349,7 +356,7 @@ const AnalyticsScreen = ({ navigation }: AnalyticsScreenProps) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
   },

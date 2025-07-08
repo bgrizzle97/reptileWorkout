@@ -16,6 +16,7 @@ export interface SerializableUserProfile {
     deadlift: number;
   };
   achievements: SerializableAchievement[];
+  lairName?: string;
 }
 
 export interface SerializableWorkout {

@@ -1,17 +1,36 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Exercise } from '../../services/firebase';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { Exercise } from '../../types';
+import { getExercises, getExercisesByCategory, getExercisesByEquipmentType } from '../../services/exercises';
+import { allExercises } from '../../data/allExercises';
 
 interface ExerciseState {
   exercises: Exercise[];
   loading: boolean;
   error: string | null;
+  selectedExercise: Exercise | null;
+  filteredExercises: Exercise[];
+  selectedCategory: string;
+  selectedEquipmentType: string;
 }
 
 const initialState: ExerciseState = {
   exercises: [],
   loading: false,
   error: null,
+  selectedExercise: null,
+  filteredExercises: [],
+  selectedCategory: 'All',
+  selectedEquipmentType: 'All'
 };
+
+export const loadExercises = createAsyncThunk(
+  'exercises/loadExercises',
+  async () => {
+    // For now, return the local exercises data
+    // In a real app, you'd fetch from Firebase
+    return allExercises;
+  }
+);
 
 const exerciseSlice = createSlice({
   name: 'exercises',

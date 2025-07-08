@@ -3,6 +3,7 @@ import { Provider } from 'react-redux';
 import { TamaguiProvider } from 'tamagui';
 import { store } from './store';
 import config from './tamagui.config';
+import { AchievementProvider } from './providers/AchievementProvider';
 
 interface AppProviderProps {
   children: ReactNode;
@@ -10,7 +11,11 @@ interface AppProviderProps {
 
 const AppProvider = ({ children }: AppProviderProps) => (
   <Provider store={store}>
-    <TamaguiProvider config={config}>{children}</TamaguiProvider>
+    <TamaguiProvider config={config}>
+      <AchievementProvider>
+        {children}
+      </AchievementProvider>
+    </TamaguiProvider>
   </Provider>
 );
 

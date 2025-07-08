@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, ActivityIndicator, Alert, Dimensions } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import { theme } from '../constants/theme';
+import { themeOptionsMap } from '../store/slices/themeSlice';
 import { getSupplements, Supplement } from '../services/firebase';
+import { useAppSelector } from '../store';
 
 const { width, height } = Dimensions.get('window');
 
@@ -10,6 +11,9 @@ const SupplementsScreen = ({ navigation }: any) => {
   const [supplements, setSupplements] = useState<Supplement[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedSupplement, setSelectedSupplement] = useState<Supplement | null>(null);
+  const currentThemeId = useAppSelector((state) => state.theme.current);
+  const theme = themeOptionsMap[currentThemeId];
+  const styles = getStyles(theme);
 
   useEffect(() => {
     loadSupplements();
@@ -233,7 +237,7 @@ const SupplementsScreen = ({ navigation }: any) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
   },

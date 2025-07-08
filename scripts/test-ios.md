@@ -107,3 +107,41 @@ Your app should work on iOS because:
 ---
 
 **Note**: The app should work seamlessly on iOS since it's built with React Native and uses cross-platform libraries! 
+
+The errors you’re seeing—“database not ready” and “firebase index error”—are common when Firestore queries require indexes that haven’t been created yet, or if Firestore is still provisioning resources.
+
+### What’s Happening?
+- **Firestore Index Error:**  
+  When you run a compound query (e.g., filtering and ordering on multiple fields), Firestore often requires a custom index. If it’s missing, Firestore throws an error and usually provides a direct link to create the index in the error message.
+- **Database Not Ready:**  
+  This can occur if Firestore is still setting up, or if you just deployed new indexes and they haven’t finished building.
+
+---
+
+### How to Fix
+
+#### 1. Deploy All Required Indexes
+Your repo includes a `firestore.indexes.json` file. You should deploy these indexes to Firestore:
+
+```sh
+firebase deploy --only firestore:indexes
+```
+
+#### 2. Create Indexes from Error Messages
+If you see an error in the app or console, it often includes a link like:
+> “You can create it here: https://console.firebase.google.com/…”
+
+Click the link and follow the prompt to create the index. It may take a few minutes for Firestore to build it.
+
+#### 3. Wait for Indexes to Build
+After deploying or creating indexes, wait a few minutes for Firestore to finish building them. The error will go away once the index is ready.
+
+---
+
+### Next Steps
+
+- Run the deploy command above.
+- If you still get errors, copy the error message and use the provided link to create the missing index.
+- Wait a few minutes, then try again.
+
+Would you like me to propose the deploy command for you to run, or do you want help interpreting a specific error message? 

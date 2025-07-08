@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import { theme } from '../constants/theme';
+import { useAppSelector } from '../store';
+import { themeOptionsMap } from '../store/slices/themeSlice';
 import { signIn } from '../services/firebase';
 
 const LoginScreen = ({ navigation }: any) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const currentThemeId = useAppSelector((state) => state.theme.current);
+  const theme = themeOptionsMap[currentThemeId];
+  const styles = getStyles(theme);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -87,7 +91,7 @@ const LoginScreen = ({ navigation }: any) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
     padding: theme.spacing.lg,

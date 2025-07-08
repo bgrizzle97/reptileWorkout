@@ -1,95 +1,28 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Alert } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import { theme } from '../constants/theme';
+import { useAppDispatch, useAppSelector } from '../store';
+import { setTheme, themeOptionsMap, ThemeId } from '../store/slices/themeSlice';
+import { theme as baseTheme } from '../constants/theme';
 
 interface PersonalizationScreenProps {
   navigation: any;
 }
 
-interface ThemeOption {
-  id: string;
-  name: string;
-  description: string;
-  colors: {
-    primary: string;
-    secondary: string;
-    accent: string;
-  };
-  gradient: string[];
-}
-
 const PersonalizationScreen = ({ navigation }: PersonalizationScreenProps) => {
+  const dispatch = useAppDispatch();
+  const selectedTheme = useAppSelector((state) => state.theme.current);
+  const theme = themeOptionsMap[selectedTheme] || baseTheme;
+  const themeOptionsTyped: Record<ThemeId, typeof baseTheme & { name: string; description: string }> = themeOptionsMap as any;
   const [darkMode, setDarkMode] = useState(false);
-  const [selectedTheme, setSelectedTheme] = useState('default');
   const [notifications, setNotifications] = useState(true);
   const [achievementAlerts, setAchievementAlerts] = useState(true);
 
-  const themeOptions: ThemeOption[] = [
-    {
-      id: 'default',
-      name: 'BroScience Classic',
-      description: 'The original neon cyberpunk theme',
-      colors: {
-        primary: '#00FFFF',
-        secondary: '#FF00FF',
-        accent: '#FFFF00',
-      },
-      gradient: ['#0F0F23', '#1A1A2E'],
-    },
-    {
-      id: 'dark',
-      name: 'Dark Mode',
-      description: 'Easy on the eyes, perfect for night workouts',
-      colors: {
-        primary: '#4ECDC4',
-        secondary: '#45B7AA',
-        accent: '#96CEB4',
-      },
-      gradient: ['#1A1A1A', '#2D2D2D'],
-    },
-    {
-      id: 'sunset',
-      name: 'Sunset Gains',
-      description: 'Warm orange and purple gradients',
-      colors: {
-        primary: '#FF6B35',
-        secondary: '#F7931E',
-        accent: '#FFD23F',
-      },
-      gradient: ['#2C1810', '#4A1C10'],
-    },
-    {
-      id: 'ocean',
-      name: 'Ocean Depths',
-      description: 'Cool blue and teal theme',
-      colors: {
-        primary: '#00B4D8',
-        secondary: '#0077B6',
-        accent: '#90E0EF',
-      },
-      gradient: ['#03045E', '#023E8A'],
-    },
-    {
-      id: 'forest',
-      name: 'Forest Warrior',
-      description: 'Green and earthy tones',
-      colors: {
-        primary: '#52B788',
-        secondary: '#40916C',
-        accent: '#95D5B2',
-      },
-      gradient: ['#081C15', '#1B4332'],
-    },
-  ];
+  const styles = getStyles(theme as any);
 
   const handleThemeSelect = (themeId: string) => {
-    setSelectedTheme(themeId);
-    Alert.alert(
-      'Theme Applied',
-      'Your new theme has been applied! The changes will take effect immediately.',
-      [{ text: 'OK' }]
-    );
+    dispatch(setTheme(themeId as ThemeId));
+    // No need for Alert, UI will update immediately
   };
 
   const handleDarkModeToggle = (value: boolean) => {
@@ -109,9 +42,9 @@ const PersonalizationScreen = ({ navigation }: PersonalizationScreenProps) => {
     setAchievementAlerts(value);
   };
 
-  const renderThemeOption = (themeOption: ThemeOption) => {
+  const renderThemeOption = (themeOption: { id: string; name: string; description: string; colors: { primary: string; secondary: string; accent: string }; gradient: string[]; }) => {
     const isSelected = selectedTheme === themeOption.id;
-    
+    const themeObj = themeOptionsTyped[themeOption.id as ThemeId];
     return (
       <TouchableOpacity
         key={themeOption.id}
@@ -119,13 +52,18 @@ const PersonalizationScreen = ({ navigation }: PersonalizationScreenProps) => {
         style={styles.themeOption}
       >
         <LinearGradient
-          colors={isSelected ? theme.gradients.cyanGlow : theme.gradients.card}
+          colors={isSelected ? themeObj.gradients.accent : themeObj.gradients.background}
           style={[styles.themeCard, isSelected && styles.selectedTheme]}
         >
-          <View style={styles.themePreview}>
-            <View style={[styles.colorSwatch, { backgroundColor: themeOption.colors.primary }]} />
-            <View style={[styles.colorSwatch, { backgroundColor: themeOption.colors.secondary }]} />
-            <View style={[styles.colorSwatch, { backgroundColor: themeOption.colors.accent }]} />
+          <View style={styles.themePreviewRow}>
+            <LinearGradient
+              colors={themeObj.gradients.background}
+              style={styles.themePreviewGradient}
+            >
+              <View style={[styles.colorSwatch, { backgroundColor: themeObj.colors.primary }]} />
+              <View style={[styles.colorSwatch, { backgroundColor: themeObj.colors.secondary }]} />
+              <View style={[styles.colorSwatch, { backgroundColor: themeObj.colors.accent }]} />
+            </LinearGradient>
           </View>
           <View style={styles.themeInfo}>
             <Text style={[styles.themeName, isSelected && styles.selectedText]}>
@@ -136,7 +74,7 @@ const PersonalizationScreen = ({ navigation }: PersonalizationScreenProps) => {
             </Text>
           </View>
           {isSelected && (
-            <Text style={styles.selectedBadge}>✓</Text>
+            <Text style={styles.selectedBadge}>  </Text>
           )}
         </LinearGradient>
       </TouchableOpacity>
@@ -154,7 +92,7 @@ const PersonalizationScreen = ({ navigation }: PersonalizationScreenProps) => {
             style={styles.backButton}
             onPress={() => navigation.goBack()}
           >
-            <Text style={styles.backButtonText}>← Back</Text>
+            <Text style={styles.backButtonText}>  Back</Text>
           </TouchableOpacity>
           <Text style={styles.title}>Personalization</Text>
           <Text style={styles.subtitle}>Make the app your own, brah!</Text>
@@ -162,17 +100,22 @@ const PersonalizationScreen = ({ navigation }: PersonalizationScreenProps) => {
 
         {/* Theme Selection */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>🎨 Choose Your Theme</Text>
+          <Text style={styles.sectionTitle}>  Choose Your Theme</Text>
           <Text style={styles.sectionDescription}>
             Pick a theme that matches your vibe and workout style
           </Text>
-          
-          {themeOptions.map(renderThemeOption)}
+          {Object.entries(themeOptionsTyped).map(([id, theme]) => renderThemeOption({
+            id,
+            name: theme.name,
+            description: theme.description,
+            colors: theme.colors,
+            gradient: theme.gradients.background,
+          }))}
         </View>
 
         {/* Display Settings */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>⚙️ Display Settings</Text>
+          <Text style={styles.sectionTitle}>  Display Settings</Text>
           
           <LinearGradient
             colors={theme.gradients.card}
@@ -197,7 +140,7 @@ const PersonalizationScreen = ({ navigation }: PersonalizationScreenProps) => {
 
         {/* Notification Settings */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>🔔 Notifications</Text>
+          <Text style={styles.sectionTitle}>  Notifications</Text>
           
           <LinearGradient
             colors={theme.gradients.card}
@@ -242,7 +185,7 @@ const PersonalizationScreen = ({ navigation }: PersonalizationScreenProps) => {
 
         {/* Dashboard Customization */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>📊 Dashboard Widgets</Text>
+          <Text style={styles.sectionTitle}>  Dashboard Widgets</Text>
           <Text style={styles.sectionDescription}>
             Customize what you see on your dashboard
           </Text>
@@ -297,7 +240,7 @@ const PersonalizationScreen = ({ navigation }: PersonalizationScreenProps) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme: typeof baseTheme) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -322,7 +265,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: theme.colors.primary,
     marginBottom: theme.spacing.sm,
-    ...theme.effects.textGlow,
   },
   subtitle: {
     fontSize: theme.fontSizes.body,
@@ -337,7 +279,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: theme.colors.primary,
     marginBottom: theme.spacing.sm,
-    ...theme.effects.textGlow,
   },
   sectionDescription: {
     fontSize: theme.fontSizes.body,
@@ -352,14 +293,23 @@ const styles = StyleSheet.create({
     borderRadius: theme.borderRadius.lg,
     flexDirection: 'row',
     alignItems: 'center',
-    ...theme.shadows.glow,
   },
   selectedTheme: {
-    ...theme.shadows.neon,
   },
-  themePreview: {
+  themePreviewRow: {
     flexDirection: 'row',
-    marginRight: theme.spacing.md,
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  themePreviewGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 12,
+    padding: 4,
+    marginRight: 12,
+    width: 64,
+    height: 32,
+    overflow: 'hidden',
   },
   colorSwatch: {
     width: 20,
@@ -392,7 +342,6 @@ const styles = StyleSheet.create({
     padding: theme.spacing.lg,
     borderRadius: theme.borderRadius.lg,
     marginBottom: theme.spacing.md,
-    ...theme.shadows.glow,
   },
   settingRow: {
     flexDirection: 'row',
@@ -417,7 +366,6 @@ const styles = StyleSheet.create({
     padding: theme.spacing.lg,
     borderRadius: theme.borderRadius.lg,
     marginBottom: theme.spacing.md,
-    ...theme.shadows.glow,
   },
   widgetTitle: {
     fontSize: theme.fontSizes.body,
@@ -445,7 +393,6 @@ const styles = StyleSheet.create({
   mascotCard: {
     padding: theme.spacing.lg,
     borderRadius: theme.borderRadius.lg,
-    ...theme.shadows.glow,
   },
   mascotTitle: {
     fontSize: theme.fontSizes.body,

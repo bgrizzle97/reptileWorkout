@@ -4,6 +4,8 @@ import LinearGradient from 'react-native-linear-gradient';
 import { theme } from '../constants/theme';
 import { auth, getUserWorkouts } from '../services/firebase';
 import { SerializableWorkout } from '../types/serializable';
+import { useAppSelector } from '../store';
+import { themeOptionsMap } from '../store/slices/themeSlice';
 
 const { width, height } = Dimensions.get('window');
 
@@ -12,6 +14,9 @@ const WorkoutHistoryScreen = ({ navigation }: any) => {
   const [loading, setLoading] = useState(true);
   const [imageLoading, setImageLoading] = useState(true);
   const [selectedWorkout, setSelectedWorkout] = useState<SerializableWorkout | null>(null);
+  const currentThemeId = useAppSelector((state) => state.theme.current);
+  const theme = themeOptionsMap[currentThemeId];
+  const styles = getStyles(theme);
 
   useEffect(() => {
     loadWorkoutHistory();
@@ -29,11 +34,10 @@ const WorkoutHistoryScreen = ({ navigation }: any) => {
         }));
         setWorkouts(serializableWorkouts);
       }
-    } catch (error) {
-      console.error('Error loading workout history:', error);
-      // Don't show alert for empty results - that's normal for new users
+    } catch (error: any) {
+      console.error('Error loading workouts:', error);
       if (error.code !== 'failed-precondition' && error.code !== 'unimplemented') {
-        Alert.alert('Error', 'Failed to load your gains history, brah!');
+        Alert.alert('Error', 'Failed to load workout history');
       }
     } finally {
       setLoading(false);
@@ -270,7 +274,7 @@ const WorkoutHistoryScreen = ({ navigation }: any) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
   },

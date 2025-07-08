@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build outputs
+dist/
+build/
+*.min.js
+
+# Generated files
+*.d.ts
+
+# Test coverage
+coverage/
+
+# Temporary files
+*.tmp
+*.temp
+
+# IDE files
+.vscode/
+.idea/
+
+# OS generated files
+.DS_Store
+Thumbs.db 

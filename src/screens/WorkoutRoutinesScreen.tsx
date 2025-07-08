@@ -1,7 +1,12 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { useAppSelector } from '../store';
+import { themeOptionsMap } from '../store/slices/themeSlice';
 
 const WorkoutRoutinesScreen = () => {
+  const currentThemeId = useAppSelector((state) => state.theme.current);
+  const theme = themeOptionsMap[currentThemeId];
+  const styles = getStyles(theme);
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
@@ -26,10 +31,10 @@ const WorkoutRoutinesScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1F1F1F',
+    backgroundColor: theme.colors.background,
   },
   header: {
     padding: 20,
@@ -38,12 +43,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#00FF87',
+    color: theme.colors.primary,
     marginBottom: 5,
   },
   subtitle: {
     fontSize: 16,
-    color: '#FFFFFF',
+    color: theme.colors.text,
   },
   content: {
     padding: 20,
@@ -52,12 +57,12 @@ const styles = StyleSheet.create({
   comingSoon: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#FF0080',
+    color: theme.colors.secondary,
     marginBottom: 20,
   },
   description: {
     fontSize: 16,
-    color: '#FFFFFF',
+    color: theme.colors.text,
     textAlign: 'center',
     marginBottom: 20,
   },
@@ -66,7 +71,7 @@ const styles = StyleSheet.create({
   },
   featureItem: {
     fontSize: 14,
-    color: '#FFFFFF',
+    color: theme.colors.text,
     marginBottom: 10,
   },
 });

@@ -1,12 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image, Alert } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import { theme } from '../constants/theme';
+import { useAppSelector } from '../store';
+import { themeOptionsMap } from '../store/slices/themeSlice';
 import { auth, getUserProfile, UserProfile } from '../services/firebase';
+import { useNavigation } from '@react-navigation/native';
 
 const DashboardScreen = ({ navigation }: any) => {
+  const nav = useNavigation();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const currentThemeId = useAppSelector((state) => state.theme.current);
+  const theme = themeOptionsMap[currentThemeId];
+  const styles = getStyles(theme);
 
   useEffect(() => {
     loadUserProfile();
@@ -52,6 +58,172 @@ const DashboardScreen = ({ navigation }: any) => {
     return null;
   };
 
+  const renderQuickActions = () => (
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>Quick Actions</Text>
+      <View style={styles.quickActionsGrid}>
+        <TouchableOpacity
+          style={styles.quickActionCard}
+          onPress={() => navigation.navigate('WorkoutPlanner' as never)}
+        >
+          <Text style={styles.quickActionIcon}>💪</Text>
+          <Text style={styles.quickActionTitle}>Plan Workout</Text>
+          <Text style={styles.quickActionSubtitle}>Create your next session</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.quickActionCard}
+          onPress={() => navigation.navigate('ExerciseLibrary' as never)}
+        >
+          <Text style={styles.quickActionIcon}>📚</Text>
+          <Text style={styles.quickActionTitle}>Exercise Library</Text>
+          <Text style={styles.quickActionSubtitle}>Browse all exercises</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.quickActionCard}
+          onPress={() => navigation.navigate('Analytics' as never)}
+        >
+          <Text style={styles.quickActionIcon}>📊</Text>
+          <Text style={styles.quickActionTitle}>Analytics</Text>
+          <Text style={styles.quickActionSubtitle}>Track your progress</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.quickActionCard}
+          onPress={() => navigation.navigate('Achievements' as never)}
+        >
+          <Text style={styles.quickActionIcon}>🏆</Text>
+          <Text style={styles.quickActionTitle}>Achievements</Text>
+          <Text style={styles.quickActionSubtitle}>View your badges</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.quickActionCard}
+          onPress={() => navigation.navigate('Social' as never)}
+        >
+          <Text style={styles.quickActionIcon}>👥</Text>
+          <Text style={styles.quickActionTitle}>Social Feed</Text>
+          <Text style={styles.quickActionSubtitle}>Share your gains</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.quickActionCard}
+          onPress={() => navigation.navigate('Friends' as never)}
+        >
+          <Text style={styles.quickActionIcon}>🤝</Text>
+          <Text style={styles.quickActionTitle}>Friends</Text>
+          <Text style={styles.quickActionSubtitle}>Connect & compete</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
+  const renderEquipmentQuickAccess = () => (
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>Equipment Quick Access</Text>
+      <ScrollView 
+        horizontal 
+        showsHorizontalScrollIndicator={false}
+        style={styles.equipmentScroll}
+        contentContainerStyle={styles.equipmentScrollContent}
+      >
+        <TouchableOpacity
+          style={styles.equipmentCard}
+          onPress={() => navigation.navigate('ExerciseLibrary' as never, { 
+            equipmentFilter: 'barbell' 
+          } as never)}
+        >
+          <Text style={styles.equipmentIcon}>🏋️</Text>
+          <Text style={styles.equipmentTitle}>Barbell</Text>
+          <Text style={styles.equipmentSubtitle}>Compound movements</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.equipmentCard}
+          onPress={() => navigation.navigate('ExerciseLibrary' as never, { 
+            equipmentFilter: 'dumbbell' 
+          } as never)}
+        >
+          <Text style={styles.equipmentIcon}>💪</Text>
+          <Text style={styles.equipmentTitle}>Dumbbell</Text>
+          <Text style={styles.equipmentSubtitle}>Unilateral training</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.equipmentCard}
+          onPress={() => navigation.navigate('ExerciseLibrary' as never, { 
+            equipmentFilter: 'cable' 
+          } as never)}
+        >
+          <Text style={styles.equipmentIcon}>🔗</Text>
+          <Text style={styles.equipmentTitle}>Cable</Text>
+          <Text style={styles.equipmentSubtitle}>Constant tension</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.equipmentCard}
+          onPress={() => navigation.navigate('ExerciseLibrary' as never, { 
+            equipmentFilter: 'bodyweight' 
+          } as never)}
+        >
+          <Text style={styles.equipmentIcon}>🚀</Text>
+          <Text style={styles.equipmentTitle}>Bodyweight</Text>
+          <Text style={styles.equipmentSubtitle}>No equipment needed</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.equipmentCard}
+          onPress={() => navigation.navigate('ExerciseLibrary' as never, { 
+            equipmentFilter: 'machine' 
+          } as never)}
+        >
+          <Text style={styles.equipmentIcon}>⚙️</Text>
+          <Text style={styles.equipmentTitle}>Machine</Text>
+          <Text style={styles.equipmentSubtitle}>Guided movements</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </View>
+  );
+
+  const renderRecentWorkouts = () => (
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>Recent Workouts</Text>
+      {/* Implementation of renderRecentWorkouts */}
+    </View>
+  );
+
+  const renderStats = () => (
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>Stats</Text>
+      <View style={styles.statsContainer}>
+        <LinearGradient
+          colors={theme.gradients.card}
+          style={styles.statCard}
+        >
+          <Text style={styles.statNumber}>{userProfile?.daysSinceLastSkippedLegDay || 0}</Text>
+          <Text style={styles.statLabel}>Days Since Last Skipped Leg Day</Text>
+        </LinearGradient>
+        
+        <LinearGradient
+          colors={theme.gradients.card}
+          style={styles.statCard}
+        >
+          <Text style={styles.statNumber}>{userProfile?.totalWorkouts || 0}</Text>
+          <Text style={styles.statLabel}>Total Workouts</Text>
+        </LinearGradient>
+        
+        <LinearGradient
+          colors={theme.gradients.card}
+          style={styles.statCard}
+        >
+          <Text style={styles.statNumber}>{userProfile?.currentStreak || 0}</Text>
+          <Text style={styles.statLabel}>Current Streak</Text>
+        </LinearGradient>
+      </View>
+    </View>
+  );
+
   if (loading) {
     return (
       <LinearGradient colors={theme.gradients.background} style={styles.container}>
@@ -63,30 +235,16 @@ const DashboardScreen = ({ navigation }: any) => {
   }
 
   return (
-    <LinearGradient
-      colors={theme.gradients.background}
-      style={styles.container}
-    >
+    <LinearGradient colors={theme.gradients.background} style={styles.container}>
       <ScrollView style={styles.scrollView}>
         <View style={styles.header}>
-          <View style={styles.headerContent}>
-            <LinearGradient
-              colors={theme.gradients.cyanGlow}
-              style={styles.mascotBorder}
-            >
-              <Image 
-                source={require('../assets/buff-lizard.jpg')}
-                style={styles.mascotImage}
-                resizeMode="contain"
-              />
-            </LinearGradient>
-            <View style={styles.headerText}>
-              <Text style={styles.title}>
-                Welcome Back, {userProfile?.displayName || 'Swole Brother'}!
-              </Text>
-              <Text style={styles.subtitle}>{getMotivationalQuote()}</Text>
-            </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Text style={styles.title}>Dashboard</Text>
+            <TouchableOpacity onPress={() => nav.navigate('Notifications' as never)} style={{ marginLeft: 12 }}>
+              <Text style={{ fontSize: 24 }}>🔔</Text>
+            </TouchableOpacity>
           </View>
+          <Text style={styles.subtitle}>Welcome to Rep-tile Dysfunction!</Text>
         </View>
 
         {/* Achievement Badge */}
@@ -102,52 +260,10 @@ const DashboardScreen = ({ navigation }: any) => {
           </View>
         )}
 
-        <View style={styles.statsContainer}>
-          <LinearGradient
-            colors={theme.gradients.card}
-            style={styles.statCard}
-          >
-            <Text style={styles.statNumber}>{userProfile?.daysSinceLastSkippedLegDay || 0}</Text>
-            <Text style={styles.statLabel}>Days Since Last Skipped Leg Day</Text>
-          </LinearGradient>
-          
-          <LinearGradient
-            colors={theme.gradients.card}
-            style={styles.statCard}
-          >
-            <Text style={styles.statNumber}>{userProfile?.totalWorkouts || 0}</Text>
-            <Text style={styles.statLabel}>Total Workouts</Text>
-          </LinearGradient>
-          
-          <LinearGradient
-            colors={theme.gradients.card}
-            style={styles.statCard}
-          >
-            <Text style={styles.statNumber}>{userProfile?.currentStreak || 0}</Text>
-            <Text style={styles.statLabel}>Current Streak</Text>
-          </LinearGradient>
-        </View>
-
-        {/* Personal Records Section */}
-        {userProfile?.personalRecords && (
-          <View style={styles.prContainer}>
-            <Text style={styles.sectionTitle}>Personal Records</Text>
-            <View style={styles.prGrid}>
-              <LinearGradient colors={theme.gradients.card} style={styles.prCard}>
-                <Text style={styles.prNumber}>{userProfile.personalRecords.benchPress || 0}</Text>
-                <Text style={styles.prLabel}>Bench Press</Text>
-              </LinearGradient>
-              <LinearGradient colors={theme.gradients.card} style={styles.prCard}>
-                <Text style={styles.prNumber}>{userProfile.personalRecords.squat || 0}</Text>
-                <Text style={styles.prLabel}>Squat</Text>
-              </LinearGradient>
-              <LinearGradient colors={theme.gradients.card} style={styles.prCard}>
-                <Text style={styles.prNumber}>{userProfile.personalRecords.deadlift || 0}</Text>
-                <Text style={styles.prLabel}>Deadlift</Text>
-              </LinearGradient>
-            </View>
-          </View>
-        )}
+        {renderQuickActions()}
+        {renderEquipmentQuickAccess()}
+        {renderRecentWorkouts()}
+        {renderStats()}
 
         <View style={styles.menuContainer}>
           <LinearGradient
@@ -198,7 +314,33 @@ const DashboardScreen = ({ navigation }: any) => {
               onPress={() => navigation.navigate('Profile')}
             >
               <Text style={styles.menuTitle}>Profile</Text>
-              <Text style={styles.menuSubtitle}>Check your gains progress</Text>
+              <Text style={styles.menuSubtitle}>Manage your swole account</Text>
+            </TouchableOpacity>
+          </LinearGradient>
+
+          <LinearGradient
+            colors={theme.gradients.card}
+            style={styles.menuItem}
+          >
+            <TouchableOpacity 
+              style={styles.menuTouchable}
+              onPress={() => navigation.navigate('Social')}
+            >
+              <Text style={styles.menuTitle}>Social Hub</Text>
+              <Text style={styles.menuSubtitle}>Connect with fitness community</Text>
+            </TouchableOpacity>
+          </LinearGradient>
+
+          <LinearGradient
+            colors={theme.gradients.card}
+            style={styles.menuItem}
+          >
+            <TouchableOpacity 
+              style={styles.menuTouchable}
+              onPress={() => navigation.navigate('AIRecommendations')}
+            >
+              <Text style={styles.menuTitle}>AI Recommendations</Text>
+              <Text style={styles.menuSubtitle}>Smart workout suggestions</Text>
             </TouchableOpacity>
           </LinearGradient>
 
@@ -285,7 +427,7 @@ const DashboardScreen = ({ navigation }: any) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -440,6 +582,71 @@ const styles = StyleSheet.create({
   loadingText: {
     fontSize: theme.fontSizes.body,
     color: theme.colors.primary,
+  },
+  section: {
+    padding: theme.spacing.lg,
+  },
+  quickActionsGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  quickActionCard: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing.lg,
+    marginRight: theme.spacing.md,
+    minWidth: 120,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  quickActionIcon: {
+    fontSize: 32,
+    marginBottom: theme.spacing.sm,
+  },
+  quickActionTitle: {
+    fontSize: theme.fontSizes.body,
+    fontWeight: 'bold',
+    color: theme.colors.text,
+    textAlign: 'center',
+    marginBottom: theme.spacing.xs,
+  },
+  quickActionSubtitle: {
+    fontSize: theme.fontSizes.small,
+    color: theme.colors.textSecondary,
+    textAlign: 'center',
+  },
+  equipmentScroll: {
+    marginTop: theme.spacing.md,
+  },
+  equipmentScrollContent: {
+    paddingRight: theme.spacing.lg,
+  },
+  equipmentCard: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing.lg,
+    marginRight: theme.spacing.md,
+    minWidth: 120,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  equipmentIcon: {
+    fontSize: 32,
+    marginBottom: theme.spacing.sm,
+  },
+  equipmentTitle: {
+    fontSize: theme.fontSizes.body,
+    fontWeight: 'bold',
+    color: theme.colors.text,
+    textAlign: 'center',
+    marginBottom: theme.spacing.xs,
+  },
+  equipmentSubtitle: {
+    fontSize: theme.fontSizes.small,
+    color: theme.colors.textSecondary,
+    textAlign: 'center',
   },
 });
 

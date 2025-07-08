@@ -16,17 +16,7 @@ import {
   Timestamp,
   serverTimestamp 
 } from 'firebase/firestore';
-
-// Firebase configuration - hardcoded for now
-const firebaseConfig = {
-  apiKey: "AIzaSyDjkuZOPnqJgajCdvBILkEMSOpYBuaahg0",
-  authDomain: "reptiledysfunction-2601f.firebaseapp.com",
-  projectId: "reptiledysfunction-2601f",
-  storageBucket: "reptiledysfunction-2601f.firebasestorage.app",
-  messagingSenderId: "527592177863",
-  appId: "1:527592177863:web:9249c38abd6a24eae87ee2",
-  measurementId: ""
-};
+import { firebaseConfig } from '../config/firebase';
 
 console.log('Initializing Firebase with config:', firebaseConfig);
 
@@ -138,7 +128,7 @@ export const signIn = async (email: string, password: string) => {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     return userCredential.user;
-  } catch (error) {
+  } catch (error: any) {
     throw error;
   }
 };
@@ -146,7 +136,7 @@ export const signIn = async (email: string, password: string) => {
 export const logOut = async () => {
   try {
     await signOut(auth);
-  } catch (error) {
+  } catch (error: any) {
     throw error;
   }
 };
@@ -214,7 +204,7 @@ export const getUserProfile = async (userId: string): Promise<UserProfile | null
       } as UserProfile;
     }
     return null;
-  } catch (error) {
+  } catch (error: any) {
     throw error;
   }
 };
@@ -222,7 +212,7 @@ export const getUserProfile = async (userId: string): Promise<UserProfile | null
 export const updateUserProfile = async (userId: string, updates: Partial<UserProfile>) => {
   try {
     await updateDoc(doc(db, 'users', userId), updates);
-  } catch (error) {
+  } catch (error: any) {
     throw error;
   }
 };
@@ -238,7 +228,7 @@ export const saveWorkout = async (workout: Omit<Workout, 'id'>): Promise<string>
     
     const docRef = await addDoc(collection(db, 'workouts'), workoutData);
     return docRef.id;
-  } catch (error) {
+  } catch (error: any) {
     throw error;
   }
 };
@@ -246,7 +236,7 @@ export const saveWorkout = async (workout: Omit<Workout, 'id'>): Promise<string>
 export const updateWorkout = async (workoutId: string, updates: Partial<Workout>) => {
   try {
     await updateDoc(doc(db, 'workouts', workoutId), updates);
-  } catch (error) {
+  } catch (error: any) {
     throw error;
   }
 };
@@ -279,7 +269,7 @@ export const getUserWorkouts = async (userId: string): Promise<Workout[]> => {
       ...doc.data(),
       date: doc.data().date?.toDate() || new Date(),
     })) as Workout[];
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error getting user workouts:', error);
     // If there's an index error, try without ordering
     if (error.code === 'failed-precondition' || error.code === 'unimplemented') {
@@ -295,7 +285,7 @@ export const getUserWorkouts = async (userId: string): Promise<Workout[]> => {
           ...doc.data(),
           date: doc.data().date?.toDate() || new Date(),
         })) as Workout[];
-      } catch (fallbackError) {
+      } catch (fallbackError: any) {
         console.error('Fallback query also failed:', fallbackError);
         return [];
       }
@@ -316,7 +306,7 @@ export const getWorkout = async (workoutId: string): Promise<Workout | null> => 
       } as Workout;
     }
     return null;
-  } catch (error) {
+  } catch (error: any) {
     throw error;
   }
 };
@@ -324,7 +314,7 @@ export const getWorkout = async (workoutId: string): Promise<Workout | null> => 
 export const deleteWorkout = async (workoutId: string) => {
   try {
     await deleteDoc(doc(db, 'workouts', workoutId));
-  } catch (error) {
+  } catch (error: any) {
     throw error;
   }
 };
@@ -334,7 +324,7 @@ export const saveExercise = async (exercise: Omit<Exercise, 'id'>): Promise<stri
   try {
     const docRef = await addDoc(collection(db, 'exercises'), exercise);
     return docRef.id;
-  } catch (error) {
+  } catch (error: any) {
     throw error;
   }
 };
@@ -346,7 +336,7 @@ export const getExercises = async (): Promise<Exercise[]> => {
       id: doc.id,
       ...doc.data(),
     })) as Exercise[];
-  } catch (error) {
+  } catch (error: any) {
     throw error;
   }
 };
@@ -363,7 +353,7 @@ export const getExercisesByCategory = async (category: string): Promise<Exercise
       id: doc.id,
       ...doc.data(),
     })) as Exercise[];
-  } catch (error) {
+  } catch (error: any) {
     throw error;
   }
 };
@@ -376,7 +366,7 @@ export const getSupplements = async (): Promise<Supplement[]> => {
       id: doc.id,
       ...doc.data(),
     })) as Supplement[];
-  } catch (error) {
+  } catch (error: any) {
     throw error;
   }
 };
@@ -393,7 +383,7 @@ export const getSupplementsByCategory = async (category: string): Promise<Supple
       id: doc.id,
       ...doc.data(),
     })) as Supplement[];
-  } catch (error) {
+  } catch (error: any) {
     throw error;
   }
 };
@@ -402,7 +392,7 @@ export const saveSupplement = async (supplement: Omit<Supplement, 'id'>): Promis
   try {
     const docRef = await addDoc(collection(db, 'supplements'), supplement);
     return docRef.id;
-  } catch (error) {
+  } catch (error: any) {
     throw error;
   }
 };
@@ -496,59 +486,4 @@ export const getDefaultAchievements = (): Achievement[] => [
   },
 ];
 
-export const checkAndUpdateAchievements = async (userId: string, userProfile: UserProfile) => {
-  try {
-    const updatedAchievements = [...userProfile.achievements];
-    let hasUpdates = false;
-
-    // Check First Steps achievement
-    const firstSteps = updatedAchievements.find(a => a.id === '1');
-    if (firstSteps && !firstSteps.unlocked && userProfile.totalWorkouts >= 1) {
-      firstSteps.unlocked = true;
-      firstSteps.progress = 1;
-      firstSteps.unlockedAt = new Date();
-      hasUpdates = true;
-    }
-
-    // Check Consistency King achievement
-    const consistencyKing = updatedAchievements.find(a => a.id === '2');
-    if (consistencyKing && !consistencyKing.unlocked) {
-      consistencyKing.progress = Math.min(userProfile.currentStreak, 7);
-      if (consistencyKing.progress >= 7) {
-        consistencyKing.unlocked = true;
-        consistencyKing.unlockedAt = new Date();
-        hasUpdates = true;
-      }
-    }
-
-    // Check Bench Press Beast achievement
-    const benchBeast = updatedAchievements.find(a => a.id === '4');
-    if (benchBeast && !benchBeast.unlocked) {
-      benchBeast.progress = Math.max(userProfile.personalRecords.benchPress, 0);
-      if (benchBeast.progress >= 225) {
-        benchBeast.unlocked = true;
-        benchBeast.unlockedAt = new Date();
-        hasUpdates = true;
-      }
-    }
-
-    // Check Squat Master achievement
-    const squatMaster = updatedAchievements.find(a => a.id === '5');
-    if (squatMaster && !squatMaster.unlocked) {
-      squatMaster.progress = Math.max(userProfile.personalRecords.squat, 0);
-      if (squatMaster.progress >= 315) {
-        squatMaster.unlocked = true;
-        squatMaster.unlockedAt = new Date();
-        hasUpdates = true;
-      }
-    }
-
-    if (hasUpdates) {
-      await updateUserProfile(userId, { achievements: updatedAchievements });
-    }
-
-    return updatedAchievements;
-  } catch (error) {
-    throw error;
-  }
-}; 
+ 

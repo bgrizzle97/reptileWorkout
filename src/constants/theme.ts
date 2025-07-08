@@ -1,41 +1,36 @@
 export const theme = {
   colors: {
-    // Primary colors - more user-friendly
-    primary: '#00D4FF',      // Bright cyan blue
-    secondary: '#00FF9D',    // Bright green
-    accent: '#4A90E2',       // Soft blue
+    // Futuristic metallic/space-age base
+    primary: '#A7BFE8',      // Metallic blue-silver
+    secondary: '#F5F7FA',    // Silver-white
+    accent: '#6A82FB',       // Electric blue
     warning: '#FFB74D',      // Warm orange
     success: '#4CAF50',      // Natural green
+    error: '#FF5252',        // Error red
     
-    // Background gradients
-    background: '#0A0A0A',   // Deep black
-    surface: '#1A1A1A',      // Dark gray
-    card: '#2A2A2A',         // Medium gray
-    elevated: '#3A3A3A',     // Light gray
+    // Backgrounds
+    background: '#232526',   // Deep space gray
+    surface: '#414345',      // Metallic dark gray
+    card: '#757F9A',         // Steel blue
+    elevated: '#A7BFE8',     // Light metallic
     
-    // Text colors
-    text: '#FFFFFF',         // Pure white
-    textSecondary: '#CCCCCC', // Light gray
-    textMuted: '#888888',    // Medium gray
+    // Text
+    text: '#F5F7FA',         // Silver-white
+    textSecondary: '#A7BFE8', // Metallic blue-silver
+    textMuted: '#7B8794',    // Muted steel
     
-    // User-friendly neon effects
-    neonCyan: '#00D4FF',
-    neonGreen: '#00FF9D',
-    neonBlue: '#4A90E2',
-    neonWhite: '#FFFFFF',
-    neonGray: '#E0E0E0',
+    // Border
+    border: '#A7BFE8',       // Metallic blue-silver
   },
   gradients: {
-    primary: ['#00D4FF', '#0099CC'],
-    secondary: ['#00FF9D', '#00CC7A'],
-    accent: ['#4A90E2', '#357ABD'],
-    background: ['#0A0A0A', '#1A1A1A'],
-    card: ['#2A2A2A', '#3A3A3A'],
-    // User-friendly gradients
-    cyanGlow: ['#00D4FF', '#0099CC'],
-    greenGlow: ['#00FF9D', '#00CC7A'],
-    blueGlow: ['#4A90E2', '#357ABD'],
-    whiteGlow: ['#FFFFFF', '#E0E0E0'],
+    primary: ['#A7BFE8', '#6A82FB'], // Metallic blue
+    secondary: ['#F5F7FA', '#A7BFE8'], // Silver
+    accent: ['#6A82FB', '#232526'], // Electric blue to space gray
+    background: ['#232526', '#414345'], // Space gray
+    card: ['#757F9A', '#A7BFE8'], // Steel blue
+    cyanGlow: ['#00D4FF', '#0099CC'], // Cyan glow effect
+    greenGlow: ['#00FF88', '#00CC6A'], // Green glow effect
+    blueGlow: ['#4A90E2', '#357ABD'], // Blue glow effect
   },
   fontSizes: {
     heading: 28,
@@ -60,75 +55,56 @@ export const theme = {
     round: 50,
   },
   shadows: {
-    neon: {
-      shadowColor: '#00D4FF',
-      shadowOffset: { width: 0, height: 0 },
-      shadowOpacity: 0.4,
+    // Minimal, modern shadow
+    metallic: {
+      shadowColor: '#A7BFE8',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.15,
       shadowRadius: 8,
       elevation: 8,
     },
-    glow: {
-      shadowColor: '#00FF9D',
-      shadowOffset: { width: 0, height: 0 },
-      shadowOpacity: 0.3,
-      shadowRadius: 10,
-      elevation: 10,
+    glass: {
+      shadowColor: '#F5F7FA',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.08,
+      shadowRadius: 12,
+      elevation: 6,
     },
-    // User-friendly shadows
-    strongNeon: {
+    neon: {
       shadowColor: '#00D4FF',
-      shadowOffset: { width: 0, height: 0 },
-      shadowOpacity: 0.6,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.3,
       shadowRadius: 12,
       elevation: 12,
     },
     greenGlow: {
-      shadowColor: '#00FF9D',
-      shadowOffset: { width: 0, height: 0 },
-      shadowOpacity: 0.4,
-      shadowRadius: 10,
-      elevation: 10,
+      shadowColor: '#00FF88',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.3,
+      shadowRadius: 12,
+      elevation: 12,
     },
     blueGlow: {
       shadowColor: '#4A90E2',
-      shadowOffset: { width: 0, height: 0 },
-      shadowOpacity: 0.35,
-      shadowRadius: 9,
-      elevation: 9,
-    },
-    whiteGlow: {
-      shadowColor: '#FFFFFF',
-      shadowOffset: { width: 0, height: 0 },
-      shadowOpacity: 0.2,
-      shadowRadius: 6,
-      elevation: 6,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.3,
+      shadowRadius: 12,
+      elevation: 12,
     },
   },
-  // User-friendly effects
   effects: {
-    textGlow: {
-      textShadowColor: '#00D4FF',
-      textShadowOffset: { width: 0, height: 0 },
-      textShadowRadius: 6,
+    // Minimal, crisp text shadow for metallic
+    textMetallic: {
+      textShadowColor: '#A7BFE8',
+      textShadowOffset: { width: 0, height: 1 },
+      textShadowRadius: 2,
     },
-    textGlowGreen: {
-      textShadowColor: '#00FF9D',
-      textShadowOffset: { width: 0, height: 0 },
-      textShadowRadius: 4,
-    },
-    textGlowWhite: {
-      textShadowColor: '#FFFFFF',
-      textShadowOffset: { width: 0, height: 0 },
-      textShadowRadius: 3,
-    },
-    borderGlow: {
-      borderWidth: 1.5,
-      borderColor: '#00D4FF',
-      shadowColor: '#00D4FF',
-      shadowOffset: { width: 0, height: 0 },
-      shadowOpacity: 0.4,
-      shadowRadius: 6,
-      elevation: 6,
+    // Glassy effect (for overlays, modals, etc.)
+    glass: {
+      backgroundColor: 'rgba(245,247,250,0.15)',
+      borderColor: 'rgba(255,255,255,0.18)',
+      borderWidth: 1,
+      backdropFilter: 'blur(8px)', // For web, ignored on native
     },
   },
 }; 

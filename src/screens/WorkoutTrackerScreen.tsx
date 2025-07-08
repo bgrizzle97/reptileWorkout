@@ -2,7 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert, ActivityIndicator } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { theme } from '../constants/theme';
-import { auth, saveWorkout, getExercises, Exercise, WorkoutSet } from '../services/firebase';
+import { auth, saveWorkout } from '../services/firebase';
+import { getExercises } from '../services/exercises';
+import { allExercises } from '../data/allExercises';
+import { Exercise, WorkoutSet } from '../types';
+import { useAppSelector } from '../store';
+import { themeOptionsMap } from '../store/slices/themeSlice';
+import SocialService from '../services/social';
 
 interface CurrentWorkout {
   name: string;
@@ -21,6 +27,10 @@ const WorkoutTrackerScreen = ({ navigation }: any) => {
   const [reps, setReps] = useState('');
   const [workoutDuration, setWorkoutDuration] = useState(0);
 
+  const currentThemeId = useAppSelector((state) => state.theme.current);
+  const theme = themeOptionsMap[currentThemeId];
+  const styles = getStyles(theme);
+
   useEffect(() => {
     loadExercises();
   }, []);
@@ -38,7 +48,9 @@ const WorkoutTrackerScreen = ({ navigation }: any) => {
 
   const loadExercises = async () => {
     try {
-      const exercisesData = await getExercises();
+      // For now, use the all exercises data
+      // In a real app, you'd fetch from Firebase
+      const exercisesData = allExercises;
       setExercises(exercisesData);
     } catch (error) {
       console.error('Error loading exercises:', error);
@@ -152,6 +164,18 @@ const WorkoutTrackerScreen = ({ navigation }: any) => {
         'Workout Complete! 🎉',
         `Great job, brah! You just crushed it for ${workoutDuration} minutes and moved ${workoutData.totalWeight} total pounds! The gains are real!`,
         [
+          {
+            text: 'Share Workout',
+            onPress: async () => {
+              try {
+                await SocialService.shareWorkout(workoutData);
+                Alert.alert('Shared!', 'Your workout has been shared with the community! 💪');
+              } catch (error) {
+                console.error('Error sharing workout:', error);
+                Alert.alert('Error', 'Failed to share workout');
+              }
+            }
+          },
           {
             text: 'View Progress',
             onPress: () => navigation.navigate('Profile')
@@ -382,7 +406,7 @@ const WorkoutTrackerScreen = ({ navigation }: any) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
   },

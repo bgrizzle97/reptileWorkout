@@ -1,62 +1,68 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import { theme } from '../constants/theme';
+import { useAppSelector } from '../store';
+import { themeOptionsMap } from '../store/slices/themeSlice';
 
-const HomeScreen = ({ navigation }: any) => (
-  <LinearGradient
-    colors={theme.gradients.background}
-    style={styles.container}
-  >
-    <View style={styles.content}>
-      <View style={styles.mascotContainer}>
+const HomeScreen = ({ navigation }: any) => {
+  const currentThemeId = useAppSelector((state) => state.theme.current);
+  const theme = themeOptionsMap[currentThemeId];
+  const styles = getStyles(theme);
+  return (
+    <LinearGradient
+      colors={theme.gradients.background}
+      style={styles.container}
+    >
+      <View style={styles.content}>
+        <View style={styles.mascotContainer}>
+          <LinearGradient
+            colors={theme.gradients.cyanGlow}
+            style={styles.mascotBorder}
+          >
+            <Image 
+              source={require('../assets/buff-lizard.jpg')}
+              style={styles.mascotImage}
+              resizeMode="contain"
+            />
+          </LinearGradient>
+        </View>
+        
+        <Text style={styles.title}>Welcome to Rep-tile Dysfunction!</Text>
+        <Text style={styles.subtitle}>
+          Where your gains are only limited by your memes.
+        </Text>
+        <Text style={styles.description}>
+          Join the legion of swole and start your transformation journey today!
+        </Text>
+      </View>
+
+      <View style={styles.buttonContainer}>
         <LinearGradient
           colors={theme.gradients.cyanGlow}
-          style={styles.mascotBorder}
+          style={styles.button}
         >
-          <Image 
-            source={require('../assets/buff-lizard.jpg')}
-            style={styles.mascotImage}
-            resizeMode="contain"
-          />
+          <TouchableOpacity 
+            style={styles.buttonTouchable}
+            onPress={() => navigation.navigate('Login')}
+          >
+            <Text style={styles.buttonText}>Login</Text>
+          </TouchableOpacity>
         </LinearGradient>
-      </View>
-      
-      <Text style={styles.title}>Welcome to Rep-tile Dysfunction!</Text>
-      <Text style={styles.subtitle}>
-        Where your gains are only limited by your memes.
-      </Text>
-      <Text style={styles.description}>
-        Join the legion of swole and start your transformation journey today!
-      </Text>
-    </View>
-
-    <View style={styles.buttonContainer}>
-      <LinearGradient
-        colors={theme.gradients.cyanGlow}
-        style={styles.button}
-      >
+        
         <TouchableOpacity 
-          style={styles.buttonTouchable}
-          onPress={() => navigation.navigate('Login')}
+          style={styles.secondaryButton}
+          onPress={() => navigation.navigate('SignUp')}
         >
-          <Text style={styles.buttonText}>Login</Text>
+          <Text style={styles.secondaryButtonText}>
+            Join the Legion
+          </Text>
         </TouchableOpacity>
-      </LinearGradient>
-      
-      <TouchableOpacity 
-        style={styles.secondaryButton}
-        onPress={() => navigation.navigate('SignUp')}
-      >
-        <Text style={styles.secondaryButtonText}>
-          Join the Legion
-        </Text>
-      </TouchableOpacity>
-    </View>
-  </LinearGradient>
-);
+      </View>
+    </LinearGradient>
+  );
+};
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'space-between',

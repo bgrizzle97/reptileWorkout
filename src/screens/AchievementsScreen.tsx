@@ -4,6 +4,9 @@ import LinearGradient from 'react-native-linear-gradient';
 import { theme } from '../constants/theme';
 import { ACHIEVEMENTS, getUnlockedAchievements, getNextAchievement, getAchievementProgress } from '../constants/achievements';
 import { auth, getUserProfile, UserProfile } from '../services/firebase';
+import { useAppSelector } from '../store';
+import { themeOptionsMap } from '../store/slices/themeSlice';
+import SocialService from '../services/social';
 
 interface AchievementsScreenProps {
   navigation: any;
@@ -13,6 +16,10 @@ const AchievementsScreen = ({ navigation }: AchievementsScreenProps) => {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [achievements, setAchievements] = useState(ACHIEVEMENTS);
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const currentThemeId = useAppSelector((state) => state.theme.current);
+  const theme = themeOptionsMap[currentThemeId];
+  const styles = getStyles(theme);
 
   useEffect(() => {
     loadUserProfile();
@@ -58,11 +65,33 @@ const AchievementsScreen = ({ navigation }: AchievementsScreenProps) => {
     const percentage = getProgressPercentage(achievement);
     const progress = getAchievementProgress(achievement, userProfile);
     
-    Alert.alert(
-      achievement.title,
-      `${achievement.description}\n\nProgress: ${progress}/${achievement.requirement} (${percentage.toFixed(1)}%)\n\n${achievement.reward ? `Reward: ${achievement.reward}` : 'No reward yet'}`,
-      [{ text: 'OK' }]
-    );
+    if (achievement.unlocked) {
+      Alert.alert(
+        achievement.title,
+        `${achievement.description}\n\nProgress: ${progress}/${achievement.requirement} (${percentage.toFixed(1)}%)\n\n${achievement.reward ? `Reward: ${achievement.reward}` : 'No reward yet'}`,
+        [
+          {
+            text: 'Share Achievement',
+            onPress: async () => {
+              try {
+                await SocialService.shareAchievement(achievement);
+                Alert.alert('Shared!', 'Your achievement has been shared with the community! 🏆');
+              } catch (error) {
+                console.error('Error sharing achievement:', error);
+                Alert.alert('Error', 'Failed to share achievement');
+              }
+            }
+          },
+          { text: 'OK' }
+        ]
+      );
+    } else {
+      Alert.alert(
+        achievement.title,
+        `${achievement.description}\n\nProgress: ${progress}/${achievement.requirement} (${percentage.toFixed(1)}%)\n\n${achievement.reward ? `Reward: ${achievement.reward}` : 'No reward yet'}`,
+        [{ text: 'OK' }]
+      );
+    }
   };
 
   const renderAchievementCard = (achievement: any) => {
@@ -242,7 +271,7 @@ const AchievementsScreen = ({ navigation }: AchievementsScreenProps) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
   },

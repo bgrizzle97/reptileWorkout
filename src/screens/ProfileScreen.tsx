@@ -1,10 +1,10 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import { theme } from '../constants/theme';
 import { useFirebase } from '../hooks/useFirebase';
 import { useAppSelector } from '../store';
 import { logOut } from '../services/firebase';
+import { themeOptionsMap } from '../store/slices/themeSlice';
 
 // Achievement system
 interface Achievement {
@@ -20,6 +20,9 @@ interface Achievement {
 const ProfileScreen = ({ navigation }: any) => {
   const { user, profile } = useFirebase();
   const { loading } = useAppSelector((state: any) => state.user);
+  const currentThemeId = useAppSelector((state) => state.theme.current);
+  const theme = themeOptionsMap[currentThemeId];
+  const styles = getStyles(theme);
 
   const handleLogout = async () => {
     Alert.alert(
@@ -156,7 +159,7 @@ const ProfileScreen = ({ navigation }: any) => {
       >
         <Text style={styles.settingsTitle}>Settings</Text>
         
-        <TouchableOpacity style={styles.settingItem}>
+        <TouchableOpacity style={styles.settingItem} onPress={() => navigation.navigate('EditProfile')}>
           <Text style={styles.settingText}>Edit Profile</Text>
           <Text style={styles.settingArrow}>→</Text>
         </TouchableOpacity>
@@ -215,7 +218,7 @@ const ProfileScreen = ({ navigation }: any) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
   },

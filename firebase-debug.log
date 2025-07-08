@@ -1,0 +1,21 @@
+[debug] [2025-07-08T23:08:33.855Z] ----------------------------------------------------------------------
+[debug] [2025-07-08T23:08:33.857Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\brand\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js init
+[debug] [2025-07-08T23:08:33.857Z] CLI Version:   14.9.0
+[debug] [2025-07-08T23:08:33.857Z] Platform:      win32
+[debug] [2025-07-08T23:08:33.857Z] Node Version:  v20.12.0
+[debug] [2025-07-08T23:08:33.857Z] Time:          Tue Jul 08 2025 19:08:33 GMT-0400 (Eastern Daylight Time)
+[debug] [2025-07-08T23:08:33.857Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-07-08T23:08:33.861Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-07-08T23:08:33.862Z] > authorizing via signed-in user (brandongrubb1997@gmail.com)
+[info] 
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  D:\New folder (2)\workoutApp\reptileWorkout
+

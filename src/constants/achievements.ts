@@ -240,6 +240,140 @@ export const ACHIEVEMENTS: Achievement[] = [
     reward: 'Partner workout routines',
     unlocked: false,
   },
+
+  // Enhanced Achievement System - Phase 1
+  {
+    id: 'protein_master_100',
+    title: 'Protein Master',
+    description: 'Log 100 protein shakes',
+    icon: '🥛',
+    color: '#FF6B35',
+    requirement: 100,
+    type: 'supplement',
+    reward: 'Exclusive protein shake recipes',
+    unlocked: false,
+  },
+  {
+    id: 'gym_legend_100',
+    title: 'Gym Legend',
+    description: 'Complete 100 total workouts',
+    icon: '👑',
+    color: '#9B59B6',
+    requirement: 100,
+    type: 'workout',
+    reward: 'Legendary workout routines',
+    unlocked: false,
+  },
+  {
+    id: 'pr_hunter_10',
+    title: 'PR Hunter',
+    description: 'Set 10 personal records',
+    icon: '🎯',
+    color: '#E67E22',
+    requirement: 10,
+    type: 'pr',
+    reward: 'Advanced PR tracking system',
+    unlocked: false,
+  },
+  {
+    id: 'leg_day_warrior_30',
+    title: 'Leg Day Warrior',
+    description: 'Complete 30 consecutive leg days',
+    icon: '🦵',
+    color: '#F39C12',
+    requirement: 30,
+    type: 'streak',
+    reward: 'Specialized leg day routines',
+    unlocked: false,
+  },
+  {
+    id: 'cardio_king',
+    title: 'Cardio King',
+    description: 'Complete 50 cardio sessions',
+    icon: '❤️',
+    color: '#E74C3C',
+    requirement: 50,
+    type: 'workout',
+    reward: 'Advanced cardio tracking',
+    unlocked: false,
+  },
+  {
+    id: 'strength_master',
+    title: 'Strength Master',
+    description: 'Achieve 1000+ total lbs in big 3 lifts',
+    icon: '🏋️',
+    color: '#2ECC71',
+    requirement: 1000,
+    type: 'pr',
+    reward: 'Strength specialist programs',
+    unlocked: false,
+  },
+  {
+    id: 'consistency_champion',
+    title: 'Consistency Champion',
+    description: 'Work out 5+ days per week for 4 weeks',
+    icon: '📈',
+    color: '#3498DB',
+    requirement: 20,
+    type: 'streak',
+    reward: 'Consistency tracking tools',
+    unlocked: false,
+  },
+  {
+    id: 'supplement_guru',
+    title: 'Supplement Guru',
+    description: 'Log 200 supplement entries',
+    icon: '💊',
+    color: '#9B59B6',
+    requirement: 200,
+    type: 'supplement',
+    reward: 'Custom supplement stack builder',
+    unlocked: false,
+  },
+  {
+    id: 'morning_person',
+    title: 'Morning Person',
+    description: 'Complete 25 workouts before 7 AM',
+    icon: '🌅',
+    color: '#F1C40F',
+    requirement: 25,
+    type: 'special',
+    reward: 'Early bird workout routines',
+    unlocked: false,
+  },
+  {
+    id: 'night_trainer',
+    title: 'Night Trainer',
+    description: 'Complete 25 workouts after 9 PM',
+    icon: '🌙',
+    color: '#34495E',
+    requirement: 25,
+    type: 'special',
+    reward: 'Late night training programs',
+    unlocked: false,
+  },
+  {
+    id: 'weekend_warrior_50',
+    title: 'Weekend Warrior',
+    description: 'Complete 50 weekend workouts',
+    icon: '🎉',
+    color: '#E74C3C',
+    requirement: 50,
+    type: 'special',
+    reward: 'Weekend warrior challenges',
+    unlocked: false,
+  },
+  {
+    id: 'social_fitness',
+    title: 'Social Fitness',
+    description: 'Share 20 workouts on social media',
+    icon: '📱',
+    color: '#2ECC71',
+    requirement: 20,
+    type: 'special',
+    reward: 'Social media integration tools',
+    unlocked: false,
+  },
 ];
 
 export const getAchievementProgress = (achievement: Achievement, userStats: any): number => {
@@ -247,14 +381,44 @@ export const getAchievementProgress = (achievement: Achievement, userStats: any)
   
   switch (achievement.type) {
     case 'workout':
+      if (achievement.id === 'cardio_king') {
+        return Math.min(userStats.cardioSessions || 0, achievement.requirement);
+      }
       return Math.min(userStats.totalWorkouts || 0, achievement.requirement);
     case 'streak':
+      if (achievement.id === 'leg_day_warrior_30') {
+        return Math.min(userStats.legDayStreak || 0, achievement.requirement);
+      }
+      if (achievement.id === 'consistency_champion') {
+        return Math.min(userStats.weeklyWorkoutCount || 0, achievement.requirement);
+      }
       return Math.min(userStats.currentStreak || 0, achievement.requirement);
     case 'pr':
+      if (achievement.id === 'strength_master') {
+        const bigThreeTotal = (userStats.personalRecords?.benchPress || 0) + 
+                             (userStats.personalRecords?.squat || 0) + 
+                             (userStats.personalRecords?.deadlift || 0);
+        return Math.min(bigThreeTotal, achievement.requirement);
+      }
       return Math.min(userStats.personalRecords?.total || 0, achievement.requirement);
     case 'supplement':
+      if (achievement.id === 'protein_master_100') {
+        return Math.min(userStats.proteinShakes || 0, achievement.requirement);
+      }
       return Math.min(userStats.supplementLogs || 0, achievement.requirement);
     case 'special':
+      if (achievement.id === 'morning_person') {
+        return Math.min(userStats.morningWorkouts || 0, achievement.requirement);
+      }
+      if (achievement.id === 'night_trainer') {
+        return Math.min(userStats.nightWorkouts || 0, achievement.requirement);
+      }
+      if (achievement.id === 'weekend_warrior_50') {
+        return Math.min(userStats.weekendWorkouts || 0, achievement.requirement);
+      }
+      if (achievement.id === 'social_fitness') {
+        return Math.min(userStats.sharedWorkouts || 0, achievement.requirement);
+      }
       return Math.min(userStats.specialStats?.[achievement.id] || 0, achievement.requirement);
     default:
       return 0;

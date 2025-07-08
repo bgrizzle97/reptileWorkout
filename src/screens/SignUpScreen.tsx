@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { signUp, createUserProfile } from '../services/firebase';
-import { theme } from '../constants/theme';
+import { useAppSelector } from '../store';
+import { themeOptionsMap } from '../store/slices/themeSlice';
 
 const SignUpScreen = ({ navigation }: any) => {
   const [email, setEmail] = useState('');
@@ -10,6 +11,9 @@ const SignUpScreen = ({ navigation }: any) => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
+  const currentThemeId = useAppSelector((state) => state.theme.current);
+  const theme = themeOptionsMap[currentThemeId];
+  const styles = getStyles(theme);
 
   const handleSignUp = async () => {
     if (!email || !password || !confirmPassword || !username) {
@@ -31,7 +35,6 @@ const SignUpScreen = ({ navigation }: any) => {
     try {
       const userCredential = await signUp(email, password);
       await createUserProfile(userCredential.uid, {
-        username,
         email,
         displayName: username,
       });
@@ -117,7 +120,7 @@ const SignUpScreen = ({ navigation }: any) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
